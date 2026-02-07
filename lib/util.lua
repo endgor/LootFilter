@@ -16,6 +16,9 @@ function LootFilter.debug(value)
 end;
 
 function LootFilter.report(value)
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then
+		return;
+	end
 	if (LootFilterVars[LootFilter.REALMPLAYER].report) then
 		LootFilter.print(value);
 	end;
