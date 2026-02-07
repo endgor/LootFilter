@@ -31,7 +31,7 @@ function LootFilter.confirmDelete(item)
 			end,
 			OnUpdate = function (data)
 				if ( not CursorHasItem() ) then
-					StaticPopup_Hide("DELETE_ITEM");
+					StaticPopup_Hide("LOOTFILTER_CONFIRMDELETE");
 				end
 			end,
 			timeout = 30,
@@ -57,9 +57,9 @@ function LootFilter.deleteItemFromBag(item)
 			LootFilter.debug("|cffff4444[DELETE]|r PickupContainerItem => CursorHasItem=" .. tostring(hasItem));
 			if hasItem then
 				DeleteCursorItem();
+				return true;
 			end
-			local myTime = GetTime();
-			return true;
+			return false;
 		end
 	end;
 	return false;

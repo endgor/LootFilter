@@ -47,7 +47,11 @@ function OnUpdate(...)
 	if not Schedule then
 		Schedule = coroutine.wrap(Scheduler);
 	end
-	xpcall(Schedule, geterrorhandler())
+	local ok, err = pcall(Schedule);
+	if not ok then
+		geterrorhandler()(err);
+		Schedule = nil;
+	end
 end
 
 ScheduleFrame:SetScript("OnUpdate", OnUpdate);

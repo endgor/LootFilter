@@ -43,9 +43,11 @@ end
 
 function LootFilter.processBagUpdate()
 	if not LootFilterVars[LootFilter.REALMPLAYER].lootbotmode then
+		LootFilter.bagUpdatePending = false;
 		return;
 	end
 	if not LootFilterVars[LootFilter.REALMPLAYER].enabled then
+		LootFilter.bagUpdatePending = false;
 		return;
 	end
 
