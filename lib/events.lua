@@ -112,6 +112,14 @@ function LootFilter.OnEvent()
 		return;
 	end;
 
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then
+		if event == "ADDON_LOADED" and arg1 == "LootFilter" then
+			-- Allow ADDON_LOADED to proceed (it does the initialization)
+		else
+			return;
+		end
+	end
+
 	if (event == "CHAT_MSG_ADDON") then
 		if (arg1 == "LootFilter") then
 			local name = string.match(arg2, "(%a+):");
