@@ -17,7 +17,7 @@ local function Scheduler(errorHandler)
 	local addon = LootFilter; -- Bind to a local variable to reduce lookup times
 	local StartTime, MaxTime = 0, .005; -- Started current object, amount of time per frame to spend processing events
 	local function Yield(force)
-		if force or (StartTime + MaxTime) < GetTime() then
+		if force or (StartTime + MaxTime) > GetTime() then
 			coroutine.yield();
 		end
 	end
