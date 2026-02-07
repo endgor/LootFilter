@@ -31,7 +31,8 @@ function LootFilter.confirmDelete(item)
 			end,
 			OnUpdate = function (data)
 				if ( not CursorHasItem() ) then
-					StaticPopup_Hide("LOOTFILTER_CONFIRMDELETE");
+					-- Hide Blizzard's default delete popup if it appears after DeleteCursorItem().
+					StaticPopup_Hide("DELETE_ITEM");
 				end
 			end,
 			timeout = 30,
@@ -194,7 +195,6 @@ function LootFilter.getExtendedItemInfo(item)
 	end
 	return result;
 end;
-
 
 
 

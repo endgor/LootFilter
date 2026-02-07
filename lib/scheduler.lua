@@ -29,12 +29,22 @@ local function Scheduler(errorHandler)
 		if table.getn(stack) > 0 then
 			event = stack[1];
 			if event.Time < StartTime then
+				local ok, err = true, nil;
 				if type(event.Func) == "function" then
-					event.Func(unpack(event.Args));
+					ok, err = pcall(event.Func, unpack(event.Args));
 				elseif type(event.Func) == "string" then
-					addon[event.Func](unpack(event.Args));
+					if type(addon[event.Func]) == "function" then
+						ok, err = pcall(addon[event.Func], unpack(event.Args));
+					else
+						ok = false;
+						err = "LootFilter.schedule: function `" .. tostring(event.Func) .. "` not found";
+					end
 				end
+				-- Always remove the head event so one bad callback cannot block the queue forever.
 				table.remove(stack, 1);
+				if not ok then
+					error(err);
+				end
 			end
 			Yield();
 		else
