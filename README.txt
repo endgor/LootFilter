@@ -13,6 +13,7 @@ COMMANDS
 --------
   /lf            Open options window
   /lf lootbot    Toggle Scavenger/companion mode
+  /lf debug      Toggle debug diagnostic logging
   /lf status     Show addon status
   /lf help       Show commands
 
