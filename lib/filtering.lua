@@ -58,6 +58,9 @@ function LootFilter.processItemStack()
 			end;
 			table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, 1);
 		end;
+	else
+		LootFilter.debug("|cffffffcc[PROCESS]|r Item not found in bags, removing from queue: " .. tostring(item["name"]));
+		table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, 1);
 	end;
-	LootFilter.schedule(LootFilter.SCHEDULE_INTERVAL, LootFilter.processItemStack);	
+	LootFilter.schedule(LootFilter.SCHEDULE_INTERVAL, LootFilter.processItemStack);
 end;
