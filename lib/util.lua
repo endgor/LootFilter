@@ -127,7 +127,7 @@ function LootFilter.command(cmd)
 	elseif (args[1] == "help") then
 		LootFilter.print("Commands:");
 		LootFilter.print("  /lf - Toggle options window");
-		LootFilter.print("  /lf lootbot - Toggle loot bot mode (for companion/pet looting)");
+		LootFilter.print("  /lf lootbot - Toggle loot bot mode (auto-filters items added to bags, e.g. from Scavenger companion)");
 		LootFilter.print("  /lf debug - Toggle debug mode (diagnostic output in chat)");
 		LootFilter.print("  /lf status - Show current status");
 		LootFilter.print("  /lf help - Show this help");
