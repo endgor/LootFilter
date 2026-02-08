@@ -150,14 +150,23 @@ function LootFilter.constructCleanList()
 					item["amount"] = LootFilter.getStackSizeOfItem(item);
 					LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready earlier
 
-					local reason = LootFilter.matchKeepProperties(item);
-					if (reason == "") then
-						reason = LootFilter.matchDeleteProperties(item); -- items that match delete properties should be deleted first
-						if (reason ~= "") then
-							item["value"] = item["value"] - 1000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
-						end;
+					local reason = LootFilter.matchKeepNames(item);
+					if (reason ~= "") then
+						-- keep name takes highest priority, skip item
+					elseif (LootFilter.matchDeleteNames(item) ~= "") then
+						item["value"] = item["value"] - 1000; -- delete name overrides keep properties
 						LootFilter.cleanList[z] = item;
 						z = z + 1;
+					else
+						reason = LootFilter.matchKeepProperties(item);
+						if (reason == "") then
+							reason = LootFilter.matchDeleteProperties(item);
+							if (reason ~= "") then
+								item["value"] = item["value"] - 1000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
+							end;
+							LootFilter.cleanList[z] = item;
+							z = z + 1;
+						end;
 					end;
 				else
 					slots = slots + 1;

@@ -1,4 +1,4 @@
-v1.07:
+v1.0.7:
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 Added manual name filter priority override - manual keep/delete name entries now take precedence over all quality/type/value filters.
 Added matchKeepNames() and matchDeleteNames() helper functions for isolated name matching.
