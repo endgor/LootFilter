@@ -108,10 +108,6 @@ function LootFilter.getValueOfItem(item)
 		itemValue = itemValueAuctioneer;
 	end;
 	
-	if (itemValue ~= 0) then
-		itemValue = tonumber(itemValue/10000);
-	end;
-
 	return itemValue;	
 end;
 

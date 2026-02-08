@@ -34,7 +34,7 @@ function LootFilter.processCaching()
 		if (LootFilter.deleteItemFromBag(LootFilter.cleanList[1])) then
 			local calculatedValue;
 			if (LootFilter.cleanList[1]["value"] < 0) then -- item matched a delete property
-				LootFilter.cleanList[1]["value"]  = LootFilter.round(LootFilter.cleanList[1]["value"] + 1000, 4); -- restore its original value and use our rounding because blizzard/lua cant calculate properly
+				LootFilter.cleanList[1]["value"]  = LootFilter.cleanList[1]["value"] + 10000000; -- restore its original value
 			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 1) then
 				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]);
@@ -43,7 +43,7 @@ function LootFilter.processCaching()
 			else
 				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["stack"]);
 			end;
-			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue..")");
+			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
 			table.remove(LootFilter.cleanList, 1);
 		end;
 		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);				

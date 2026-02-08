@@ -154,7 +154,7 @@ function LootFilter.constructCleanList()
 					if (reason ~= "") then
 						-- keep name takes highest priority, skip item
 					elseif (LootFilter.matchDeleteNames(item) ~= "") then
-						item["value"] = item["value"] - 1000; -- delete name overrides keep properties
+						item["value"] = item["value"] - 10000000; -- delete name overrides keep properties
 						LootFilter.cleanList[z] = item;
 						z = z + 1;
 					else
@@ -162,7 +162,7 @@ function LootFilter.constructCleanList()
 						if (reason == "") then
 							reason = LootFilter.matchDeleteProperties(item);
 							if (reason ~= "") then
-								item["value"] = item["value"] - 1000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
+								item["value"] = item["value"] - 10000000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
 							end;
 							LootFilter.cleanList[z] = item;
 							z = z + 1;
@@ -183,7 +183,7 @@ function LootFilter.calculateCleanListValue()
 	local x = table.getn(LootFilter.cleanList);
 	for j = 1, x, 1 do
 		if (LootFilter.cleanList[j]["value"] < 0) then
-			totalValue = totalValue + tonumber((LootFilter.cleanList[j]["value"]+1000)*LootFilter.cleanList[j]["amount"]);
+			totalValue = totalValue + tonumber((LootFilter.cleanList[j]["value"]+10000000)*LootFilter.cleanList[j]["amount"]);
 		else
 			totalValue = totalValue + tonumber(LootFilter.cleanList[j]["value"]*LootFilter.cleanList[j]["amount"]);
 		end;
@@ -250,7 +250,7 @@ function LootFilter.sessionUpdateValues()
 	if (not GetSellValue) then
 		return;
 	end;
-	local value = LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"] * 10000;
+	local value = LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"];
 	LootFilterTextSessionValueInfo:SetText(LootFilter.Locale.LocText["LTSessionInfo"]);
 	LootFilterTextSessionItemTotal:SetText(LootFilter.Locale.LocText["LTSessionItemTotal"]..": "..LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
 	LootFilterTextSessionValueTotal:SetText(LootFilter.Locale.LocText["LTSessionTotal"]..": "..string.format("|c00FFFF66 %2dg" , value / 10000)..string.format("|c00C0C0C0 %2ds" , string.sub(value,-4)/100)..string.format("|c00CC9900 %2dc" , string.sub(value,-2)));
