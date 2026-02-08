@@ -29,12 +29,12 @@ function LootFilter.matchProperties(key, value, item, keep)
 				calculatedValue = tonumber(item["value"] * item["stack"]);
 			end;
 			if (keep) and (LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"]) then
-				if (calculatedValue > tonumber(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"])) then
-					reason = LootFilter.Locale.LocText["LTValueHighEnough"] .. " (" .. calculatedValue .. ")";
+				if (calculatedValue > tonumber(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"]) * 10000) then
+					reason = LootFilter.Locale.LocText["LTValueHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
 				end;
 			elseif (not keep) and ((LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAOn"])) then
-				if (calculatedValue < tonumber(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"])) then
-					reason = LootFilter.Locale.LocText["LTValueNotHighEnough"] .. " (" .. calculatedValue .. ")";
+				if (calculatedValue < tonumber(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"]) * 10000) then
+					reason = LootFilter.Locale.LocText["LTValueNotHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
 				end;
 			end;
 		end;
