@@ -1,37 +1,33 @@
-v1.0.7:
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
+
+v1.0.7:
 Added manual name filter priority override - manual keep/delete name entries now take precedence over all quality/type/value filters.
-Added matchKeepNames() and matchDeleteNames() helper functions for isolated name matching.
 Restructured filter priority chain: Keep Names -> Delete Names -> Keep Properties -> Delete Properties -> No Match.
+Applied the same priority chain to constructCleanList so clean/sell/caching paths are consistent with loot processing.
 All existing name matching patterns (#, ##, exact) remain fully supported.
-Maintains backward compatibility with existing filter configurations.
 
+v1.0.6:
+Fixed infinite loop when item not found in bags.
 
-v3.13.1:
-Added a setting for heirloom (Binds to account) items.
-Added QUhTan to locale files. The new entries are under `qualities' and `radioButtonsText'. Please email locale updates to tweak(at)lootfilter(dot)com.
-Fixed a problem where the delete settings button was showing up even when only one profile existed.
-Fixed a problem where the delete settings button sometimes wouldn't work.
-v3.13:
-Fixed a problem with copying settings.
-Added a more detailed error message when attempting to use PickupContainerItem on an invalid item location.
-Added LFINT_TXT_DELETESETTINGS to locale files. Please email locale updates to tweak(at)lootfilter(dot)com.
-Added a delete settings button to the copy tab.
-v3.12:
-Fixed problem in scheduler.
-Fixed problem with loading settings.
-v3.11:
-Bumped TOC to 3.1
-Fixed problem in lib/events.lua.
-If anything crops up, let me know and please be specific.
-Changed version check to only happen once per minute. Still only active while in a group.
-v3.10:
-Revamped the scheduler.
-Added the option to confirm when an item is deleted. (Requires new localizations, see locale/en.lua for details)
-Changed the sorting on the list of items under the "Clean" tab.
-v3.9
-Fixed some issues with the CN and DE locale.
-v3.8:
-Fixed an error with the scroll frame in the "Clean" tab.
-v3.7:
-Updated Loot Filter for compatibility with Wrath of the Lich King.
+v1.0.5:
+Added Hearthstone to default keep list for new characters.
+
+v1.0.4:
+Added Glyph type filtering support.
+
+v1.0.3:
+Fixed confirm-delete popup handling and scheduler queue recovery.
+Fixed multiple critical bugs found in static review.
+Cleaned up codebase and removed unnecessary comments.
+
+v1.0.2:
+Added /lf debug command with diagnostic logging.
+
+v1.0.1:
+Fixed duplicate item processing when loot bot mode is active.
+Fixed scheduler yield logic.
+Fixed container slot loops starting at 0 instead of 1.
+Fixed global variable leaks across multiple files.
+Fixed double removal in deleteItems delete path.
+Fixed guild message never sending.
+Added REALMPLAYER guard to OnEvent and report functions.
