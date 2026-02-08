@@ -1,18 +1,18 @@
 function LootFilter.sortByValue(a, b)
 	if ( not a ) then return true;	elseif ( not b ) then return false; end
-	
-	if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 1) then
-		a = tonumber(a["value"]);
-		b = tonumber(b["value"]);
-	elseif (LootFilterVars[LootFilter.REALMPLAYER].calculate == 2) then
-		a = tonumber(a["value"]*a["amount"]);
-		b = tonumber(b["value"]*b["amount"]);
-	else
-		a = tonumber(a["value"]*a["stack"]);
-		b = tonumber(b["value"]*b["stack"]);
-	end;	
-	
-	return tonumber(a) < tonumber(b);
+
+	local aVal = a["value"] or math.huge;
+	local bVal = b["value"] or math.huge;
+
+	if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 2) then
+		aVal = aVal * (a["amount"] or 1);
+		bVal = bVal * (b["amount"] or 1);
+	elseif (LootFilterVars[LootFilter.REALMPLAYER].calculate ~= 1) then
+		aVal = aVal * (a["stack"] or 1);
+		bVal = bVal * (b["stack"] or 1);
+	end;
+
+	return aVal < bVal;
 end;
 
 
