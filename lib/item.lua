@@ -51,6 +51,7 @@ function LootFilter.deleteItemFromBag(item)
 		LootFilter.debug("|cffff4444[DELETE]|r Attempting delete: " .. tostring(item["name"]) .. " bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]) .. " confirmdel=" .. tostring(LootFilterVars[LootFilter.REALMPLAYER].confirmdel));
 		if LootFilterVars[LootFilter.REALMPLAYER].confirmdel then
 			LootFilter.confirmDelete(item);
+			return true; -- Dialog is handling this item; caller should remove from stack
 		else
 			PickupContainerItem(item["bag"], item["slot"]);
 			local hasItem = CursorHasItem();

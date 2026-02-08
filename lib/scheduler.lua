@@ -43,11 +43,15 @@ local function Scheduler(errorHandler)
 	end
 end
 
-function OnUpdate(...)
+local function OnUpdate(...)
 	if not Schedule then
 		Schedule = coroutine.wrap(Scheduler);
 	end
-	xpcall(Schedule, geterrorhandler())
+	local ok, err = xpcall(Schedule, geterrorhandler())
+	if not ok then
+		-- Coroutine is dead after an error; reset so it can be recreated next frame
+		Schedule = nil;
+	end
 end
 
 ScheduleFrame:SetScript("OnUpdate", OnUpdate);
