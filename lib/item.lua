@@ -116,7 +116,7 @@ function LootFilter.openItemIfContainer(item)
 	if (LootFilter.itemOpen == nil) or (LootFilter.itemOpen == false) then -- only try and open something once after looting because it locks up if you don't
 		for key,value in pairs(LootFilterVars[LootFilter.REALMPLAYER].openList) do
 			if (LootFilter.matchItemNames(item, value)) then
-				if (LootFilterVars[LootFilter.REALMPLAYER].notifyopen) then
+				if (LootFilterVars[LootFilter.REALMPLAYER].notifyopen) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
 					LootFilter.print(LootFilter.Locale.LocText["LTTryopen"].." "..item["link"].." : "..LootFilter.Locale.LocText["LTNameMatched"].." ("..value..")");
 				end;
 			
