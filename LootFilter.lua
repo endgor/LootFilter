@@ -1,4 +1,5 @@
 LootFilterVars = {
+	silent = false,
 };
 
 
