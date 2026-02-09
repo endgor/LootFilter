@@ -23,7 +23,10 @@ function LootFilter.setNames()
 	if (result ~= nil) then
 		for w in string.gmatch(result, "[^\n]+\n") do
 			w = string.gsub(w, "\n", "");
-			table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"], w);
+			w = strtrim(w);
+			if (w ~= "") then
+				table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"], w);
+			end;
 		end;
 	end;
 end;
@@ -34,7 +37,10 @@ function LootFilter.setNamesDelete()
 	if (result ~= nil) then
 		for w in string.gmatch(result, "[^\n]+\n") do
 			w = string.gsub(w, "\n", "");
-			table.insert(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"], w);
+			w = strtrim(w);
+			if (w ~= "") then
+				table.insert(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"], w);
+			end;
 		end;
 	end;
 end;
@@ -485,7 +491,7 @@ function LootFilter.initTypeTab()
 	
 	for key, typeName in LootFilter.sortedPairs(LootFilter.Locale.types) do
 		local f = CreateFrame("Frame", "LootFilterDKDType"..typeName, LootFilterFrameType);
-		local y = -100;
+		local y = -124;
 		for key2, subtypeName in LootFilter.sortedPairs(LootFilter.Locale.radioButtonsText) do
 			if (string.match(key2, "^TY"..typeName)) then
 				local g = CreateFrame("Frame","LootFilter"..key2, getglobal("LootFilterDKDType"..typeName), "LootFilterDKDOptionsTemplate");
@@ -500,7 +506,7 @@ function LootFilter.initTypeTab()
 end;
 
 function LootFilter.initQualityTab()
-	local y = -100;
+	local y = -124;
 	for key, typeName in LootFilter.sortedPairs(LootFilter.Locale.radioButtonsText) do
 		if (string.match(key, "^QU")) then
 			local g = CreateFrame("Frame","LootFilter"..key, LootFilterFrameQuality, "LootFilterDKDOptionsTemplate");

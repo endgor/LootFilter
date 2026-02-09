@@ -142,6 +142,12 @@ function LootFilter.findItemInBags(item)
 	return item;
 end;
 
+function LootFilter.wildcardToPattern(wildcard)
+	local escaped = string.gsub(wildcard, "([%(%)%.%%%+%-%?%[%]%^%$])", "%%%1");
+	escaped = string.gsub(escaped, "%*", "(.*)");
+	return "^" .. escaped .. "$";
+end;
+
 function LootFilter.matchItemNames(item, searchName)
 	if (item["name"] == nil) or (searchName == nil) then
 		return false;
@@ -150,7 +156,18 @@ function LootFilter.matchItemNames(item, searchName)
 	local comment;
 	searchName, comment = LootFilter.stripComment(searchName);
 
-	if (string.find(searchName, "##", 1, true) == 1) then
+	if (string.find(searchName, "*", 1, true) ~= nil) and (string.find(searchName, "#", 1, true) ~= 1) then
+		local pattern = string.lower(LootFilter.wildcardToPattern(searchName));
+		local ok, result = pcall(string.find, string.lower(item["name"]), pattern);
+		if (not ok) then
+			LootFilter.debug("Bad wildcard pattern: " .. tostring(searchName));
+			return false;
+		end;
+		if (result) then
+			return true;
+		end;
+		return false;
+	elseif (string.find(searchName, "##", 1, true) == 1) then
 		if (item["info"] ~= nil) then
 			local pattern = string.lower(string.sub(searchName, 3));
 			local ok, result = pcall(string.find, string.lower(item["info"]), pattern);
