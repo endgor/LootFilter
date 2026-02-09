@@ -149,6 +149,11 @@ function LootFilter.OnEvent()
 				return;
 			end;
 			local itemName = gsub(arg1, "(.*): %s*([-%d]+)%s*/%s*([-%d]+)%s*$", "%1", 1);
+			-- Strip color codes
+			itemName = string.gsub(itemName, "|c%x%x%x%x%x%x%x%x", "");
+			itemName = string.gsub(itemName, "|r", "");
+			itemName = strtrim(itemName);
+
 			if (itemName ~= arg1) then
 				local item = {};
 				item["name"] = itemName;
@@ -168,8 +173,20 @@ function LootFilter.OnEvent()
 								LootFilter.Locale.LocText["LTQuestItem"]);
 						end;
 						if (item["itemType"] ~= LootFilter.Locale.LocText["LTQuest"]) and (item["itemSubType"] ~= LootFilter.Locale.LocText["LTQuest"]) then
-							table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"],
-								itemName .. "  ; " .. LootFilter.Locale.LocText["LTAddedCosQuest"]);
+							-- Check for duplicates before adding
+							local alreadyExists = false;
+							for k, v in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]) do
+								local existingName = LootFilter.stripComment(v);
+								if (string.lower(existingName) == string.lower(itemName)) then
+									alreadyExists = true;
+									break;
+								end;
+							end;
+
+							if (not alreadyExists) then
+								table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"],
+									itemName .. "  ; " .. LootFilter.Locale.LocText["LTAddedCosQuest"]);
+							end;
 						end;
 						return;
 					end;
@@ -226,7 +243,7 @@ function LootFilter.OnEvent()
 
 	if (event == "ITEM_LOCK_CHANGED") then
 		if (LootFilter.hasFocus > 0) then
-			local itemName = LootFilter.findItemWithLock();
+			itemName = LootFilter.findItemWithLock();
 			if (itemName ~= nil) and (itemName ~= "") then
 				if (LootFilter.hasFocus == 1) then
 					LootFilterEditBox1:SetText(LootFilterEditBox1:GetText() .. itemName .. "\n");
@@ -307,6 +324,9 @@ function LootFilter.OnEvent()
 			if (LootFilterVars[LootFilter.REALMPLAYER].notifynew == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].notifynew = true;
 			end;
+			if (LootFilterVars[LootFilter.REALMPLAYER].silent == nil) then
+				LootFilterVars[LootFilter.REALMPLAYER].silent = false;
+			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].caching == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].caching = false;
 			end;
@@ -351,9 +371,6 @@ function LootFilter.OnEvent()
 			end
 			if (LootFilterVars[LootFilter.REALMPLAYER].session == nil) then
 				LootFilter.sessionReset();
-			end;
-			if (LootFilterVars[LootFilter.REALMPLAYER].silent == nil) then
-				LootFilterVars[LootFilter.REALMPLAYER].silent = false;
 			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].lootbotmode == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].lootbotmode = false;
