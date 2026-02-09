@@ -134,7 +134,7 @@ function LootFilter.AddQuestItemToKeepList(item)
 
 		if (LootFilterVars[LootFilter.REALMPLAYER].notifykeep) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
 			LootFilter.print(item["link"] ..
-			" " .. LootFilter.Locale.LocText["LTKept"] .. ": " .. LootFilter.Locale.LocText["LTQuestItem"]);
+				" " .. LootFilter.Locale.LocText["LTKept"] .. ": " .. LootFilter.Locale.LocText["LTQuestItem"]);
 		end;
 	end;
 end;
@@ -178,13 +178,6 @@ function LootFilter.command(cmd)
 		else
 			LootFilter.print("|cffff0000Loot Bot Mode DISABLED|r - Only items from loot windows will be filtered.");
 		end
-	elseif (args[1] == "silence") then
-		LootFilterVars[LootFilter.REALMPLAYER].silent = not LootFilterVars[LootFilter.REALMPLAYER].silent;
-		if LootFilterVars[LootFilter.REALMPLAYER].silent then
-			LootFilter.print("|cff00ff00Silence Mode ENABLED|r - Filter messages will be suppressed.");
-		else
-			LootFilter.print("|cffff0000Silence Mode DISABLED|r - Filter messages will be shown.");
-		end
 	elseif (args[1] == "debug") then
 		LootFilterVars[LootFilter.REALMPLAYER].debug = not LootFilterVars[LootFilter.REALMPLAYER].debug;
 		if LootFilterVars[LootFilter.REALMPLAYER].debug then
@@ -204,7 +197,8 @@ function LootFilter.command(cmd)
 	elseif (args[1] == "help") then
 		LootFilter.print("Commands:");
 		LootFilter.print("  /lf - Toggle options window");
-		LootFilter.print("  /lf lootbot - Toggle loot bot mode (for companion/pet looting)");
+		LootFilter.print(
+			"  /lf lootbot - Toggle loot bot mode (auto-filters items added to bags, e.g. from Scavenger companion)");
 		LootFilter.print("  /lf debug - Toggle debug mode (diagnostic output in chat)");
 		LootFilter.print("  /lf status - Show current status");
 		LootFilter.print("  /lf help - Show this help");
