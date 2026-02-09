@@ -43,9 +43,7 @@ function LootFilter.processCaching()
 			else
 				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["stack"]);
 			end;
-			if (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
-				LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
-			end;
+			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
 			table.remove(LootFilter.cleanList, 1);
 		end;
 		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);				
