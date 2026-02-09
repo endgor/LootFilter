@@ -115,9 +115,9 @@ function LootFilter.command(cmd)
 	elseif (args[1] == "silence") then
 		LootFilterVars[LootFilter.REALMPLAYER].silent = not LootFilterVars[LootFilter.REALMPLAYER].silent;
 		if LootFilterVars[LootFilter.REALMPLAYER].silent then
-			LootFilter.print("|cff00ff00Silence Mode ENABLED|r - Filter messages will be suppressed.");
+			LootFilter.print("|cff00ff00Silence Mode ENABLED|r - Scavenger messages will be suppressed.");
 		else
-			LootFilter.print("|cffff0000Silence Mode DISABLED|r - Filter messages will be shown.");
+			LootFilter.print("|cffff0000Silence Mode DISABLED|r - Scavenger messages will be shown.");
 		end
 	elseif (args[1] == "debug") then
 		LootFilterVars[LootFilter.REALMPLAYER].debug = not LootFilterVars[LootFilter.REALMPLAYER].debug;
@@ -128,18 +128,20 @@ function LootFilter.command(cmd)
 		end
 	elseif (args[1] == "status") then
 		LootFilter.print("Loot Bot Mode: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].lootbotmode and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].lootbotmode and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+		LootFilter.print("Silence Mode: " ..
+			(LootFilterVars[LootFilter.REALMPLAYER].silent and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("Filtering: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].enabled and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].enabled and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("Debug Mode: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].debug and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].debug and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("GetSellValue API: " ..
-		(GetSellValue and "|cff00ff00AVAILABLE|r" or "|cffff0000NOT AVAILABLE|r"));
+			(GetSellValue and "|cff00ff00AVAILABLE|r" or "|cffff0000NOT AVAILABLE|r"));
 	elseif (args[1] == "help") then
 		LootFilter.print("Commands:");
 		LootFilter.print("  /lf - Toggle options window");
-		LootFilter.print(
-		"  /lf lootbot - Toggle loot bot mode (auto-filters items added to bags, e.g. from Scavenger companion)");
+		LootFilter.print("  /lf lootbot - Toggle loot bot mode (auto-filters items added to bags)");
+		LootFilter.print("  /lf silence - Toggle silence mode (suppress Scavenger messages)");
 		LootFilter.print("  /lf debug - Toggle debug mode (diagnostic output in chat)");
 		LootFilter.print("  /lf status - Show current status");
 		LootFilter.print("  /lf help - Show this help");
@@ -195,7 +197,7 @@ function LootFilter.calculateCleanListValue()
 	for j = 1, x, 1 do
 		if (LootFilter.cleanList[j]["value"] < 0) then
 			totalValue = totalValue +
-			tonumber((LootFilter.cleanList[j]["value"] + 10000000) * LootFilter.cleanList[j]["amount"]);
+				tonumber((LootFilter.cleanList[j]["value"] + 10000000) * LootFilter.cleanList[j]["amount"]);
 		else
 			totalValue = totalValue + tonumber(LootFilter.cleanList[j]["value"] * LootFilter.cleanList[j]["amount"]);
 		end;
@@ -253,10 +255,9 @@ end;
 
 function LootFilter.sessionAdd(item)
 	LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready at loot time
-	LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"] = LootFilterVars[LootFilter.REALMPLAYER].session
-	["itemValue"] + item["value"];
-	LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"] = LootFilterVars[LootFilter.REALMPLAYER].session
-	["itemCount"] + 1;
+	local session = LootFilterVars[LootFilter.REALMPLAYER].session;
+	session["itemValue"] = session["itemValue"] + item["value"];
+	session["itemCount"] = session["itemCount"] + 1;
 end;
 
 function LootFilter.sessionUpdateValues()
@@ -266,12 +267,12 @@ function LootFilter.sessionUpdateValues()
 	local value = LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"];
 	LootFilterTextSessionValueInfo:SetText(LootFilter.Locale.LocText["LTSessionInfo"]);
 	LootFilterTextSessionItemTotal:SetText(LootFilter.Locale.LocText["LTSessionItemTotal"] ..
-	": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
+		": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
 	LootFilterTextSessionValueTotal:SetText(LootFilter.Locale.LocText["LTSessionTotal"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", value / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(value, -2)));
 	local average;
 	if (value ~= nil) and (value ~= 0) then
 		average = LootFilter.round(value / LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
@@ -279,15 +280,15 @@ function LootFilter.sessionUpdateValues()
 		average = 0;
 	end;
 	LootFilterTextSessionValueAverage:SetText(LootFilter.Locale.LocText["LTSessionAverage"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", average / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(average, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", average / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(average, -2)));
 	if (LootFilterVars[LootFilter.REALMPLAYER].session["end"] == nil) then
 		LootFilterVars[LootFilter.REALMPLAYER].session["end"] = LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	end;
 	local time = LootFilterVars[LootFilter.REALMPLAYER].session["end"] -
-	LootFilterVars[LootFilter.REALMPLAYER].session["start"];
+		LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	if (time ~= 0) then
 		local hours = time / 3600;
 		if (value ~= nil) and (value ~= 0) then
@@ -301,10 +302,10 @@ function LootFilter.sessionUpdateValues()
 		value = 0;
 	end;
 	LootFilterTextSessionValueHour:SetText(LootFilter.Locale.LocText["LTSessionValueHour"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", value / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(value, -2)));
 end;
 
 function LootFilter.deleteTable(t)
