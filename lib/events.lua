@@ -352,6 +352,9 @@ function LootFilter.OnEvent()
 			if (LootFilterVars[LootFilter.REALMPLAYER].session == nil) then
 				LootFilter.sessionReset();
 			end;
+			if (LootFilterVars[LootFilter.REALMPLAYER].silent == nil) then
+				LootFilterVars[LootFilter.REALMPLAYER].silent = false;
+			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].lootbotmode == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].lootbotmode = false;
 			end;
