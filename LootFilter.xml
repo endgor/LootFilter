@@ -436,7 +436,61 @@
 						<AbsDimension x="-300" y="-50"/>
 					</Offset>
 				</Anchor>
-				
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Header"
+							inherits="GameFontNormal"
+							text="Choose how Loot Filter should handle each quality.">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="TOP"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="-68"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_HelpText"
+							inherits="GameFontHighlightSmall"
+							text="Select one option per row.">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="TOP"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="-83"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ColumnGuide"
+							inherits="GameFontNormalSmall"
+							text="Columns: Left = Neutral, Middle = Keep, Right = Delete">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="TOP"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="-100"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ColumnGuideDescription"
+							inherits="GameFontHighlightSmall"
+							text="Neutral = no forced action for this property. Keep = matching items are kept. Delete = matching items are deleted.">
+							<Size>
+								<AbsDimension x="590" y="24"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="BOTTOM"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="52"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
 				<Frames>
 				</Frames>
 			</Frame>
@@ -463,6 +517,45 @@
 									relativeTo="LootFilterOptions">
 									<Offset>
 										<AbsDimension x="-297" y="-68"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_HelpTextType"
+							inherits="GameFontHighlightSmall"
+							text="Choose one option per subtype row.">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="TOP"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="-84"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ColumnGuide"
+							inherits="GameFontNormalSmall"
+							text="Columns: Left = Neutral, Middle = Keep, Right = Delete">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="TOP"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="-100"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parent_ColumnGuideDescription"
+							inherits="GameFontHighlightSmall"
+							text="Neutral = no forced action for this property. Keep = matching items are kept. Delete = matching items are deleted.">
+							<Size>
+								<AbsDimension x="590" y="24"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="BOTTOM"
+									relativeTo="LootFilterOptions">
+									<Offset>
+										<AbsDimension x="-297" y="52"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
