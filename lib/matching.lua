@@ -4,7 +4,7 @@ function LootFilter.matchProperties(key, value, item, keep)
 
 	if (string.match(key, "^QU")) then
 		LootFilter.debug("|cff00ffff[MATCH]|r Quality check: key=" ..
-		tostring(key) .. " ruleValue=" .. tostring(value) .. " itemRarity=" .. tostring(item["rarity"]));
+			tostring(key) .. " ruleValue=" .. tostring(value) .. " itemRarity=" .. tostring(item["rarity"]));
 		if (item["rarity"] == value) then
 			reason = LootFilter.Locale.LocText["LTQualMatched"] .. " (" .. value .. ")";
 		elseif (value == -1) then
@@ -29,12 +29,12 @@ function LootFilter.matchProperties(key, value, item, keep)
 				calculatedValue = tonumber(item["value"] * item["stack"]);
 			end;
 			if (keep) and (LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"]) then
-				if (calculatedValue > tonumber(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"]) * 10000) then
-					reason = LootFilter.Locale.LocText["LTValueHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
+				if (calculatedValue > tonumber(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"])) then
+					reason = LootFilter.Locale.LocText["LTValueHighEnough"] .. " (" .. calculatedValue .. ")";
 				end;
 			elseif (not keep) and ((LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAOn"])) then
-				if (calculatedValue < tonumber(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"]) * 10000) then
-					reason = LootFilter.Locale.LocText["LTValueNotHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
+				if (calculatedValue < tonumber(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"])) then
+					reason = LootFilter.Locale.LocText["LTValueNotHighEnough"] .. " (" .. calculatedValue .. ")";
 				end;
 			end;
 		end;
@@ -42,8 +42,8 @@ function LootFilter.matchProperties(key, value, item, keep)
 		for _, name in pairs(value) do
 			local nameMatched = LootFilter.matchItemNames(item, name);
 			LootFilter.debug("|cff00ffff[NAMES]|r \"" ..
-			tostring(name) ..
-			"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
+				tostring(name) ..
+				"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
 			if (nameMatched) then
 				reason = LootFilter.Locale.LocText["LTNameMatched"] .. " (" .. name .. ")";
 				break;
@@ -82,8 +82,8 @@ function LootFilter.matchKeepNames(item)
 		for _, name in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]) do
 			local nameMatched = LootFilter.matchItemNames(item, name);
 			LootFilter.debug("|cff00ffff[KEEP-NAMES]|r \"" ..
-			tostring(name) ..
-			"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
+				tostring(name) ..
+				"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
 			if (nameMatched) then
 				reason = LootFilter.Locale.LocText["LTNameMatched"] .. " (" .. name .. ")";
 				break;
@@ -99,8 +99,8 @@ function LootFilter.matchDeleteNames(item)
 		for _, name in pairs(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"]) do
 			local nameMatched = LootFilter.matchItemNames(item, name);
 			LootFilter.debug("|cff00ffff[DELETE-NAMES]|r \"" ..
-			tostring(name) ..
-			"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
+				tostring(name) ..
+				"\" vs \"" .. tostring(item["name"]) .. "\" => " .. (nameMatched and "|cff00ff00MATCHED|r" or "no match"));
 			if (nameMatched) then
 				reason = LootFilter.Locale.LocText["LTNameMatched"] .. " (" .. name .. ")";
 				break;
@@ -130,7 +130,7 @@ function LootFilter.findItemInBags(item)
 							item["bag"] = j;
 							item["slot"] = i;
 							LootFilter.debug("|cff00ffff[FIND]|r Found \"" ..
-							tostring(item["name"]) .. "\" in bag=" .. j .. " slot=" .. i);
+								tostring(item["name"]) .. "\" in bag=" .. j .. " slot=" .. i);
 							return item;
 						end;
 					end;
@@ -142,12 +142,6 @@ function LootFilter.findItemInBags(item)
 	return item;
 end;
 
-function LootFilter.wildcardToPattern(wildcard)
-	local escaped = string.gsub(wildcard, "([%(%)%.%%%+%-%?%[%]%^%$])", "%%%1");
-	escaped = string.gsub(escaped, "%*", "(.*)");
-	return "^" .. escaped .. "$";
-end;
-
 function LootFilter.matchItemNames(item, searchName)
 	if (item["name"] == nil) or (searchName == nil) then
 		return false;
@@ -156,18 +150,7 @@ function LootFilter.matchItemNames(item, searchName)
 	local comment;
 	searchName, comment = LootFilter.stripComment(searchName);
 
-	if (string.find(searchName, "*", 1, true) ~= nil) and (string.find(searchName, "#", 1, true) ~= 1) then
-		local pattern = string.lower(LootFilter.wildcardToPattern(searchName));
-		local ok, result = pcall(string.find, string.lower(item["name"]), pattern);
-		if (not ok) then
-			LootFilter.debug("Bad wildcard pattern: " .. tostring(searchName));
-			return false;
-		end;
-		if (result) then
-			return true;
-		end;
-		return false;
-	elseif (string.find(searchName, "##", 1, true) == 1) then
+	if (string.find(searchName, "##", 1, true) == 1) then
 		if (item["info"] ~= nil) then
 			local pattern = string.lower(string.sub(searchName, 3));
 			local ok, result = pcall(string.find, string.lower(item["info"]), pattern);
@@ -189,8 +172,14 @@ function LootFilter.matchItemNames(item, searchName)
 		if (result) then
 			return true;
 		end;
-	elseif (string.lower(item["name"]) == string.lower(searchName)) then
-		return true;
+	else
+		-- Robust matching using SanitizeName
+		local cleanItemName = LootFilter.SanitizeName(item["name"]);
+		local cleanSearchName = LootFilter.SanitizeName(searchName);
+
+		if (cleanItemName == cleanSearchName) then
+			return true;
+		end;
 	end;
 	return false;
 end;

@@ -73,6 +73,21 @@ function LootFilter.stripComment(searchName)
 	return searchName, comment;
 end;
 
+function LootFilter.SanitizeName(name)
+	if (not name) then return "" end;
+	-- Strip color codes (|cxxxxxxxx)
+	name = string.gsub(name, "|c%x%x%x%x%x%x%x%x", "");
+	-- Strip color restore code (|r)
+	name = string.gsub(name, "|r", "");
+	-- Strip punctuation and special characters (keep alphanumeric and spaces)
+	-- name = string.gsub(name, "[^%w%s]", ""); -- Too aggressive? Maybe just trim.
+	-- Trim whitespace
+	name = strtrim(name);
+	-- Lowercase
+	name = string.lower(name);
+	return name;
+end;
+
 function LootFilter.sendAddonMessage(value, channel)
 	if (channel == 1) then
 		local guild = GetGuildInfo("player");
@@ -128,21 +143,17 @@ function LootFilter.command(cmd)
 		end
 	elseif (args[1] == "status") then
 		LootFilter.print("Loot Bot Mode: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].lootbotmode and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
-		LootFilter.print("Silence Mode: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].silent and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].lootbotmode and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("Filtering: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].enabled and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].enabled and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("Debug Mode: " ..
-		(LootFilterVars[LootFilter.REALMPLAYER].debug and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
+			(LootFilterVars[LootFilter.REALMPLAYER].debug and "|cff00ff00ENABLED|r" or "|cffff0000DISABLED|r"));
 		LootFilter.print("GetSellValue API: " ..
-		(GetSellValue and "|cff00ff00AVAILABLE|r" or "|cffff0000NOT AVAILABLE|r"));
+			(GetSellValue and "|cff00ff00AVAILABLE|r" or "|cffff0000NOT AVAILABLE|r"));
 	elseif (args[1] == "help") then
 		LootFilter.print("Commands:");
 		LootFilter.print("  /lf - Toggle options window");
-		LootFilter.print(
-		"  /lf lootbot - Toggle loot bot mode (auto-filters items added to bags, e.g. from Scavenger companion)");
-		LootFilter.print("  /lf silence - Toggle silence mode (suppress filter chat messages)");
+		LootFilter.print("  /lf lootbot - Toggle loot bot mode (for companion/pet looting)");
 		LootFilter.print("  /lf debug - Toggle debug mode (diagnostic output in chat)");
 		LootFilter.print("  /lf status - Show current status");
 		LootFilter.print("  /lf help - Show this help");
@@ -165,19 +176,15 @@ function LootFilter.constructCleanList()
 					item["amount"] = LootFilter.getStackSizeOfItem(item);
 					LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready earlier
 
-					local reason = LootFilter.matchKeepNames(item);
-					if (reason ~= "") then
-						-- keep name takes highest priority, skip item
-					elseif (LootFilter.matchDeleteNames(item) ~= "") then
-						item["value"] = item["value"] - 10000000; -- delete name overrides keep properties
-						LootFilter.cleanList[z] = item;
-						z = z + 1;
+					-- Prevent Quest Items from being added to the Clean List (Auto-Sell/Delete)
+					if (item["type"] == LootFilter.Locale.LocText["LTQuest"]) or (item["subType"] == LootFilter.Locale.LocText["LTQuest"]) then
+						-- Skip this item
 					else
-						reason = LootFilter.matchKeepProperties(item);
+						local reason = LootFilter.matchKeepProperties(item);
 						if (reason == "") then
-							reason = LootFilter.matchDeleteProperties(item);
+							reason = LootFilter.matchDeleteProperties(item); -- items that match delete properties should be deleted first
 							if (reason ~= "") then
-								item["value"] = item["value"] - 10000000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
+								item["value"] = item["value"] - 1000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
 							end;
 							LootFilter.cleanList[z] = item;
 							z = z + 1;
@@ -197,8 +204,8 @@ function LootFilter.calculateCleanListValue()
 	local x = table.getn(LootFilter.cleanList);
 	for j = 1, x, 1 do
 		if (LootFilter.cleanList[j]["value"] < 0) then
-			totalValue = totalValue +
-			tonumber((LootFilter.cleanList[j]["value"] + 10000000) * LootFilter.cleanList[j]["amount"]);
+			totalValue = totalValue + tonumber((LootFilter.cleanList[j]["value"] + 1000) *
+				LootFilter.cleanList[j]["amount"]);
 		else
 			totalValue = totalValue + tonumber(LootFilter.cleanList[j]["value"] * LootFilter.cleanList[j]["amount"]);
 		end;
@@ -206,20 +213,9 @@ function LootFilter.calculateCleanListValue()
 	return totalValue;
 end;
 
-function LootFilter.deepCopy(orig)
-	if type(orig) ~= "table" then
-		return orig;
-	end
-	local copy = {};
-	for k, v in pairs(orig) do
-		copy[k] = LootFilter.deepCopy(v);
-	end
-	return copy;
-end
-
 function LootFilter.copySettings()
 	local realmPlayer = UIDropDownMenu_GetText(LootFilterSelectDropDown);
-	LootFilterVars[LootFilter.REALMPLAYER] = LootFilter.deepCopy(LootFilterVars[realmPlayer]);
+	LootFilterVars[LootFilter.REALMPLAYER] = LootFilterVars[realmPlayer];
 	LootFilter.getNames();
 	LootFilter.getNamesDelete();
 	LootFilter.getItemValue();
@@ -257,24 +253,24 @@ end;
 function LootFilter.sessionAdd(item)
 	LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready at loot time
 	LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"] = LootFilterVars[LootFilter.REALMPLAYER].session
-	["itemValue"] + item["value"];
+		["itemValue"] + item["value"];
 	LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"] = LootFilterVars[LootFilter.REALMPLAYER].session
-	["itemCount"] + 1;
+		["itemCount"] + 1;
 end;
 
 function LootFilter.sessionUpdateValues()
 	if (not GetSellValue) then
 		return;
 	end;
-	local value = LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"];
+	local value = LootFilterVars[LootFilter.REALMPLAYER].session["itemValue"] * 10000;
 	LootFilterTextSessionValueInfo:SetText(LootFilter.Locale.LocText["LTSessionInfo"]);
 	LootFilterTextSessionItemTotal:SetText(LootFilter.Locale.LocText["LTSessionItemTotal"] ..
-	": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
+		": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
 	LootFilterTextSessionValueTotal:SetText(LootFilter.Locale.LocText["LTSessionTotal"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", value / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(value, -2)));
 	local average;
 	if (value ~= nil) and (value ~= 0) then
 		average = LootFilter.round(value / LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
@@ -282,15 +278,15 @@ function LootFilter.sessionUpdateValues()
 		average = 0;
 	end;
 	LootFilterTextSessionValueAverage:SetText(LootFilter.Locale.LocText["LTSessionAverage"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", average / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(average, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", average / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(average, -2)));
 	if (LootFilterVars[LootFilter.REALMPLAYER].session["end"] == nil) then
 		LootFilterVars[LootFilter.REALMPLAYER].session["end"] = LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	end;
 	local time = LootFilterVars[LootFilter.REALMPLAYER].session["end"] -
-	LootFilterVars[LootFilter.REALMPLAYER].session["start"];
+		LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	if (time ~= 0) then
 		local hours = time / 3600;
 		if (value ~= nil) and (value ~= 0) then
@@ -304,10 +300,10 @@ function LootFilter.sessionUpdateValues()
 		value = 0;
 	end;
 	LootFilterTextSessionValueHour:SetText(LootFilter.Locale.LocText["LTSessionValueHour"] ..
-	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+		": " ..
+		string.format("|c00FFFF66 %2dg", value / 10000) ..
+		string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
+		string.format("|c00CC9900 %2dc", string.sub(value, -2)));
 end;
 
 function LootFilter.deleteTable(t)

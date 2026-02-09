@@ -175,9 +175,13 @@ function LootFilter.OnEvent()
 						if (item["itemType"] ~= LootFilter.Locale.LocText["LTQuest"]) and (item["itemSubType"] ~= LootFilter.Locale.LocText["LTQuest"]) then
 							-- Check for duplicates before adding
 							local alreadyExists = false;
+							local cleanItemName = LootFilter.SanitizeName(itemName);
+
 							for k, v in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]) do
 								local existingName = LootFilter.stripComment(v);
-								if (string.lower(existingName) == string.lower(itemName)) then
+								local cleanExistingName = LootFilter.SanitizeName(existingName);
+
+								if (cleanExistingName == cleanItemName) then
 									alreadyExists = true;
 									break;
 								end;
