@@ -61,7 +61,14 @@ function LootFilter.deleteItems(timeout, delete)
 	
 	LootFilterButtonDeleteItems:Enable();
 	LootFilterButtonIWantTo:Disable();
+	if (not delete) and LootFilter.autoSellActive and (not LootFilterVars[LootFilter.REALMPLAYER].autosell) then
+		LootFilter.autoSellActive = false;
+		LootFilter.sellQueue = 0;
+		LootFilter.schedule(2, LootFilter.processCleaning);
+		return;
+	end;
 	if (not delete) and (LootFilterButtonDeleteItems:GetText() ~= LootFilter.Locale.LocText["LTSellItems"]) then  -- cancel if vendor window is closed while selling
+		LootFilter.autoSellActive = false;
 		LootFilter.initClean();
 		local cleanLine = getglobal("cleanLine1");
 		cleanLine:SetText(LootFilter.Locale.LocText["LTVendorWinClosedWhileSelling"]);
@@ -71,6 +78,7 @@ function LootFilter.deleteItems(timeout, delete)
 	end;
 
 	if (timeout < GetTime()) then -- item could not be found and resulted in a timeout
+		LootFilter.autoSellActive = false;
 
 		LootFilter.initClean();
 		local cleanLine = getglobal("cleanLine1");
@@ -119,6 +127,7 @@ function LootFilter.deleteItems(timeout, delete)
 		
 	else
 		LootFilter.sellQueue = 0;
+		LootFilter.autoSellActive = false;
 		LootFilter.initClean();
 		local cleanLine = getglobal("cleanLine1");
 		cleanLine:SetText(LootFilter.Locale.LocText["LTFinishedSC"]);
@@ -138,4 +147,3 @@ function LootFilter.checkIfItemSold(timeout, item)
 	end;
 	
 end;
-

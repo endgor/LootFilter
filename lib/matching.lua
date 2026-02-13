@@ -191,6 +191,8 @@ function LootFilter.matchItemNames(item, searchName)
 		end;
 	elseif (string.lower(item["name"]) == string.lower(searchName)) then
 		return true;
+	elseif (LootFilter.SanitizeName(item["name"]) == LootFilter.SanitizeName(searchName)) then
+		return true;
 	end;
 	return false;
 end;

@@ -23,6 +23,8 @@ function LootFilter.processItemStack()
 	if (item["bag"] ~= -1) then
 		item["amount"] = LootFilter.getStackSizeOfItem(item);
 		LootFilter.ensureItemValue(item);
+		LootFilter.AddQuestItemToKeepList(item);
+		LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 		local _, _, dbgRarity, _, _, dbgType, dbgSubType = GetItemInfo(item["id"]);
 		LootFilter.debug("|cffffffcc[PROCESS]|r Item details: amount=" ..
 			tostring(item["amount"]) ..

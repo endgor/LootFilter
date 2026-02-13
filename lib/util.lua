@@ -73,6 +73,204 @@ function LootFilter.stripComment(searchName)
 	return searchName, comment;
 end;
 
+function LootFilter.SanitizeName(name)
+	if (name == nil) then
+		return "";
+	end;
+
+	local linkedName = string.match(name, "|h%[(.-)%]|h");
+	if (linkedName ~= nil) then
+		name = linkedName;
+	end;
+
+	name = string.gsub(name, "|c%x%x%x%x%x%x%x%x", "");
+	name = string.gsub(name, "|r", "");
+	name = strtrim(name);
+	name = string.lower(name);
+	return name;
+end;
+
+function LootFilter.normalizeNameFilterEntry(entry)
+	if (entry == nil) then
+		return "";
+	end;
+
+	local value = strtrim(entry);
+	if (value == "") then
+		return "";
+	end;
+
+	local searchName, comment = LootFilter.stripComment(value);
+	local prefix = "";
+
+	if (string.find(searchName, "##", 1, true) == 1) then
+		prefix = "##";
+		searchName = string.sub(searchName, 3);
+	elseif (string.find(searchName, "#", 1, true) == 1) then
+		prefix = "#";
+		searchName = string.sub(searchName, 2);
+	end;
+
+	searchName = strtrim(searchName);
+	local linkedName = string.match(searchName, "|h%[(.-)%]|h");
+	if (linkedName ~= nil) then
+		searchName = linkedName;
+	end;
+
+	searchName = string.gsub(searchName, "|c%x%x%x%x%x%x%x%x", "");
+	searchName = string.gsub(searchName, "|r", "");
+	searchName = strtrim(searchName);
+	if (searchName == "") then
+		return "";
+	end;
+
+	local normalized = prefix .. searchName;
+	if (comment ~= nil) and (comment ~= "") then
+		normalized = normalized .. " " .. comment;
+	end;
+
+	return normalized;
+end;
+
+function LootFilter.normalizeNameFilterList(list)
+	if (list == nil) then
+		return false;
+	end;
+
+	local normalized = {};
+	local changed = false;
+	for _, value in ipairs(list) do
+		local normalizedValue = LootFilter.normalizeNameFilterEntry(value);
+		if (normalizedValue ~= "") then
+			table.insert(normalized, normalizedValue);
+		end;
+		if (normalizedValue ~= value) then
+			changed = true;
+		end;
+	end;
+
+	if (changed) or (table.getn(normalized) ~= table.getn(list)) then
+		while (table.getn(list) > 0) do
+			table.remove(list);
+		end;
+		for _, value in ipairs(normalized) do
+			table.insert(list, value);
+		end;
+		return true;
+	end;
+
+	return false;
+end;
+
+function LootFilter.normalizeConfiguredNameFilters()
+	local keepChanged = false;
+	local deleteChanged = false;
+
+	if (LootFilterVars[LootFilter.REALMPLAYER].keepList ~= nil) then
+		keepChanged = LootFilter.normalizeNameFilterList(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]);
+	end;
+	if (LootFilterVars[LootFilter.REALMPLAYER].deleteList ~= nil) then
+		deleteChanged = LootFilter.normalizeNameFilterList(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"]);
+	end;
+
+	return keepChanged or deleteChanged;
+end;
+
+function LootFilter.isAutoQuestComment(comment)
+	if (comment == nil) or (comment == "") then
+		return false;
+	end;
+
+	local questComment = LootFilter.Locale.LocText["LTAddedCosQuest"] or "";
+	if (questComment == "") then
+		return false;
+	end;
+
+	local cleanComment = string.gsub(comment, "^;%s*", "");
+	cleanComment = strtrim(cleanComment);
+
+	return string.lower(cleanComment) == string.lower(questComment);
+end;
+
+function LootFilter.removeAutoQuestKeepsForDeleteOverride(item)
+	if (LootFilter.matchDeleteNames(item) == "") then
+		return false;
+	end;
+
+	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
+	if (keepList == nil) or (keepList["names"] == nil) then
+		return false;
+	end;
+
+	local removed = false;
+	for i = table.getn(keepList["names"]), 1, -1 do
+		local nameRule = keepList["names"][i];
+		local searchName, comment = LootFilter.stripComment(nameRule);
+		if LootFilter.isAutoQuestComment(comment) and LootFilter.matchItemNames(item, searchName) then
+			table.remove(keepList["names"], i);
+			removed = true;
+		end;
+	end;
+
+	return removed;
+end;
+
+function LootFilter.AddQuestItemToKeepList(item)
+	if (item == nil) or (item["name"] == nil) then
+		return false;
+	end;
+
+	local questText = string.lower(LootFilter.Locale.LocText["LTQuest"] or "quest");
+	local itemType = item["itemType"] or item["type"];
+	local itemSubType = item["itemSubType"] or item["subType"];
+	if (itemType == nil) and (itemSubType == nil) and (item["id"] ~= nil) then
+		local _, _, _, _, _, fetchedType, fetchedSubType = GetItemInfo(item["id"]);
+		itemType = fetchedType;
+		itemSubType = fetchedSubType;
+	end;
+
+	local isQuestItem = false;
+	if (itemType ~= nil) and (string.lower(itemType) == questText) then
+		isQuestItem = true;
+	end;
+	if (itemSubType ~= nil) and (string.lower(itemSubType) == questText) then
+		isQuestItem = true;
+	end;
+	if (not isQuestItem) then
+		return false;
+	end;
+
+	if (LootFilter.matchDeleteNames(item) ~= "") then
+		return false;
+	end;
+
+	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
+	if (keepList == nil) then
+		LootFilterVars[LootFilter.REALMPLAYER].keepList = {};
+		keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
+	end;
+	if (keepList["names"] == nil) then
+		keepList["names"] = {};
+	end;
+
+	local cleanItemName = LootFilter.SanitizeName(item["name"]);
+	for _, value in ipairs(keepList["names"]) do
+		local existingName = LootFilter.stripComment(value);
+		local cleanExistingName = LootFilter.SanitizeName(existingName);
+		if (cleanExistingName == cleanItemName) then
+			return false;
+		end;
+	end;
+
+	table.insert(keepList["names"], item["name"] .. "  ; " .. LootFilter.Locale.LocText["LTAddedCosQuest"]);
+	if (LootFilterVars[LootFilter.REALMPLAYER].notifykeep) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
+		LootFilter.print(item["link"] ..
+			" " .. LootFilter.Locale.LocText["LTKept"] .. ": " .. LootFilter.Locale.LocText["LTQuestItem"]);
+	end;
+
+	return true;
+end;
+
 function LootFilter.sendAddonMessage(value, channel)
 	if (channel == 1) then
 		local guild = GetGuildInfo("player");
@@ -164,6 +362,8 @@ function LootFilter.constructCleanList()
 					item["slot"] = i;
 					item["amount"] = LootFilter.getStackSizeOfItem(item);
 					LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready earlier
+					LootFilter.AddQuestItemToKeepList(item);
+					LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 
 					local reason = LootFilter.matchKeepNames(item);
 					if (reason ~= "") then

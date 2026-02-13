@@ -1,44 +1,79 @@
-function LootFilter.takeBagSnapshot()
-	LootFilter.bagSnapshot = {};
-	for bag = 0, 4 do
-		local numSlots = GetContainerNumSlots(bag);
-		for slot = 1, numSlots do
-			local link = GetContainerItemLink(bag, slot);
-			if link then
-				local key = bag .. ":" .. slot;
-				local count = select(2, GetContainerItemInfo(bag, slot)) or 0;
-				LootFilter.bagSnapshot[key] = link .. ":" .. count;
-			end
-		end
-	end
-end
+function LootFilter.scanBagState()
+	local countsByLink = {};
+	local slotsByLink = {};
 
-function LootFilter.findNewItemsInBags()
-	local newItems = {};
 	for bag = 0, 4 do
 		if LootFilterVars[LootFilter.REALMPLAYER].openbag[bag] then
 			local numSlots = GetContainerNumSlots(bag);
 			for slot = 1, numSlots do
 				local link = GetContainerItemLink(bag, slot);
 				if link then
-					local key = bag .. ":" .. slot;
 					local count = select(2, GetContainerItemInfo(bag, slot)) or 0;
-					local current = link .. ":" .. count;
-					local old = LootFilter.bagSnapshot[key];
-					if not old or old ~= current then
-						local item = LootFilter.getBasicItemInfo(link);
-						if item then
-							item["bag"] = bag;
-							item["slot"] = slot;
-							item["amount"] = count > 0 and count or 1;
-							table.insert(newItems, item);
-						end
-					end
+					if (count <= 0) then
+						count = 1;
+					end;
+
+					countsByLink[link] = (countsByLink[link] or 0) + count;
+					if (slotsByLink[link] == nil) then
+						slotsByLink[link] = {};
+					end;
+					table.insert(slotsByLink[link], { bag = bag, slot = slot, count = count });
 				end
 			end
 		end
 	end
-	return newItems;
+
+	return countsByLink, slotsByLink;
+end
+
+function LootFilter.takeBagSnapshot()
+	local countsByLink, _ = LootFilter.scanBagState();
+	LootFilter.bagSnapshot = countsByLink;
+end
+
+function LootFilter.findNewItemsInBags()
+	local newItems = {};
+	local currentCounts, currentSlots = LootFilter.scanBagState();
+	local oldCounts = LootFilter.bagSnapshot or {};
+
+	for link, currentCount in pairs(currentCounts) do
+		local previousCount = oldCounts[link] or 0;
+		local added = currentCount - previousCount;
+		if (added > 0) then
+			for _, slotInfo in ipairs(currentSlots[link] or {}) do
+				if (added <= 0) then
+					break;
+				end;
+
+				local item = LootFilter.getBasicItemInfo(link);
+				local slotAdded = slotInfo["count"];
+				if (slotAdded > added) then
+					slotAdded = added;
+				end;
+				if item then
+					item["bag"] = slotInfo["bag"];
+					item["slot"] = slotInfo["slot"];
+					item["amount"] = slotAdded;
+					table.insert(newItems, item);
+				end;
+
+				added = added - slotAdded;
+			end
+		end
+	end
+
+	return newItems, currentCounts;
+end
+
+function LootFilter.isBagUpdateContextBlocked()
+	local blockedFrames = { "MerchantFrame", "MailFrame", "TradeFrame", "AuctionFrame" };
+	for _, frameName in ipairs(blockedFrames) do
+		local frame = getglobal(frameName);
+		if frame and frame:IsShown() then
+			return true, frameName;
+		end
+	end
+	return false, nil;
 end
 
 function LootFilter.processBagUpdate()
@@ -48,14 +83,23 @@ function LootFilter.processBagUpdate()
 	if not LootFilterVars[LootFilter.REALMPLAYER].enabled then
 		return;
 	end
+	local blocked, frameName = LootFilter.isBagUpdateContextBlocked();
+	if blocked then
+		LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE skipped while " .. tostring(frameName) .. " is open");
+		LootFilter.takeBagSnapshot();
+		LootFilter.bagUpdatePending = false;
+		return;
+	end
 
-	local newItems = LootFilter.findNewItemsInBags();
+	local newItems, currentCounts = LootFilter.findNewItemsInBags();
 	LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE detected " .. tostring(table.getn(newItems)) .. " new item(s)");
 
 	for _, item in ipairs(newItems) do
 		LootFilter.debug("|cff44ff44[LOOTBOT]|r New item: " ..
 			tostring(item["name"]) ..
 			" (id=" .. tostring(item["id"]) .. ") bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]));
+		LootFilter.AddQuestItemToKeepList(item);
+		LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 		table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
 
 		if GetSellValue then
@@ -65,7 +109,7 @@ function LootFilter.processBagUpdate()
 		end
 	end
 
-	LootFilter.takeBagSnapshot();
+	LootFilter.bagSnapshot = currentCounts;
 
 	if table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) > 0 then
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
@@ -85,6 +129,13 @@ end
 function LootFilter.OnEvent()
 	if (event == "BAG_UPDATE") then
 		if LootFilterVars[LootFilter.REALMPLAYER] and LootFilterVars[LootFilter.REALMPLAYER].lootbotmode and LootFilterVars[LootFilter.REALMPLAYER].enabled then
+			local blocked, frameName = LootFilter.isBagUpdateContextBlocked();
+			if blocked then
+				LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE ignored while " .. tostring(frameName) .. " is open");
+				LootFilter.takeBagSnapshot();
+				LootFilter.bagUpdatePending = false;
+				return;
+			end
 			-- Skip BAG_UPDATE while a loot window is open; LOOT_OPENED handles those items
 			if LootFilter.lootWindowOpen then
 				return;
@@ -149,28 +200,16 @@ function LootFilter.OnEvent()
 				return;
 			end;
 			local itemName = gsub(arg1, "(.*): %s*([-%d]+)%s*/%s*([-%d]+)%s*$", "%1", 1);
+			itemName = string.gsub(itemName, "|c%x%x%x%x%x%x%x%x", "");
+			itemName = string.gsub(itemName, "|r", "");
+			itemName = strtrim(itemName);
 			if (itemName ~= arg1) then
-				local item = {};
-				item["name"] = itemName;
-				for index, name in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]) do
-					if (LootFilter.matchItemNames(item, name)) then
-						return;
-					end;
-				end;
-
 				for index, item in pairs(LootFilterVars[LootFilter.REALMPLAYER].itemStack) do
-					local name = item["name"];
-					if (string.lower(name) == string.lower(itemName)) then
+					local cleanName = LootFilter.SanitizeName(item["name"]);
+					local cleanItemName = LootFilter.SanitizeName(itemName);
+					if (cleanName == cleanItemName) then
 						table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, index);
-						if (LootFilterVars[LootFilter.REALMPLAYER].notifykeep) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
-							LootFilter.print(item["link"] ..
-								" " .. LootFilter.Locale.LocText["LTKept"] .. ": " ..
-								LootFilter.Locale.LocText["LTQuestItem"]);
-						end;
-						if (item["itemType"] ~= LootFilter.Locale.LocText["LTQuest"]) and (item["itemSubType"] ~= LootFilter.Locale.LocText["LTQuest"]) then
-							table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"],
-								itemName .. "  ; " .. LootFilter.Locale.LocText["LTAddedCosQuest"]);
-						end;
+						LootFilter.AddQuestItemToKeepList(item);
 						return;
 					end;
 				end;
@@ -238,6 +277,7 @@ function LootFilter.OnEvent()
 	end;
 
 	if (event == "MERCHANT_CLOSED") then
+		LootFilter.autoSellActive = false;
 		LootFilterButtonDeleteItems:SetText(LootFilter.Locale.LocText["LTDeleteItems"]);
 	end;
 
@@ -248,8 +288,10 @@ function LootFilter.OnEvent()
 			if (LootFilterVars[LootFilter.REALMPLAYER].openvendor) then
 				LootFilterOptions:Show();
 			end;
+			LootFilter.autoSellActive = false;
 			if (LootFilterVars[LootFilter.REALMPLAYER].autosell) then
 				LootFilter.iWantTo();
+				LootFilter.autoSellActive = true;
 				LootFilter.sellQueue = 1;
 				LootFilter.deleteItems(GetTime() + LootFilter.LOOT_TIMEOUT, false);
 			end;
@@ -280,6 +322,7 @@ function LootFilter.OnEvent()
 			if (LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"] == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"] = {};
 			end;
+			LootFilter.normalizeConfiguredNameFilters();
 			if (LootFilterVars[LootFilter.REALMPLAYER].itemStack == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
 			end;

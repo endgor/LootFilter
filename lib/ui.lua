@@ -23,7 +23,7 @@ function LootFilter.setNames()
 	if (result ~= nil) then
 		for w in string.gmatch(result, "[^\n]+\n") do
 			w = string.gsub(w, "\n", "");
-			w = strtrim(w);
+			w = LootFilter.normalizeNameFilterEntry(w);
 			if (w ~= "") then
 				table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"], w);
 			end;
@@ -37,7 +37,7 @@ function LootFilter.setNamesDelete()
 	if (result ~= nil) then
 		for w in string.gmatch(result, "[^\n]+\n") do
 			w = string.gsub(w, "\n", "");
-			w = strtrim(w);
+			w = LootFilter.normalizeNameFilterEntry(w);
 			if (w ~= "") then
 				table.insert(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"], w);
 			end;
@@ -529,4 +529,3 @@ function LootFilter.initCopyTab()
 		LootFilterEditBoxTitleCopy5:Hide();
 	end;
 end;
-

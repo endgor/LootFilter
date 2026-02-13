@@ -164,6 +164,13 @@ function LootFilter.getBasicItemInfo(link)
 		item["name"] = LootFilter.getNameOfItem(item["link"]);
 		item["value"] = LootFilter.getValueOfItem(item);
 		item["stack"] = LootFilter.getMaxStackSizeOfItem(item);
+		local _, _, rarity, _, _, itemType, itemSubType, stackSize = GetItemInfo(item["id"]);
+		item["quality"] = rarity;
+		item["itemType"] = itemType;
+		item["itemSubType"] = itemSubType;
+		if (tonumber(stackSize) ~= nil) and (tonumber(stackSize) > 0) then
+			item["stack"] = tonumber(stackSize);
+		end;
 		item["info"] = LootFilter.getExtendedItemInfo(item);
 	end;
 	return item;
@@ -189,7 +196,6 @@ function LootFilter.getExtendedItemInfo(item)
 	end
 	return result;
 end;
-
 
 
 

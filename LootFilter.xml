@@ -694,11 +694,12 @@
 											<OnEscapePressed>
 												LootFilter.updateFocus(1, false);
 												</OnEscapePressed>
-											<OnEditFocusGained>
-												LootFilter.updateFocus(1, true);
-												</OnEditFocusGained>
-											<OnEditFocusLost>
-											</OnEditFocusLost>
+												<OnEditFocusGained>
+													LootFilter.updateFocus(1, true);
+													</OnEditFocusGained>
+												<OnEditFocusLost>
+													LootFilter.setNames();
+												</OnEditFocusLost>
 											<OnEnter>
 												LootFilter.showTooltip(self,
 												"LToolTip5"); </OnEnter>
@@ -776,11 +777,12 @@
 											<OnEscapePressed>
 												LootFilter.updateFocus(2, false);
 												</OnEscapePressed>
-											<OnEditFocusGained>
-												LootFilter.updateFocus(2, true);
-												</OnEditFocusGained>
-											<OnEditFocusLost>
-											</OnEditFocusLost>
+												<OnEditFocusGained>
+													LootFilter.updateFocus(2, true);
+													</OnEditFocusGained>
+												<OnEditFocusLost>
+													LootFilter.setNamesDelete();
+												</OnEditFocusLost>
 											<OnEnter>
 												LootFilter.showTooltip(self,
 												"LToolTip6"); </OnEnter>
