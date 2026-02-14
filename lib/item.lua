@@ -203,6 +203,27 @@ function LootFilter.getExtendedItemInfo(item)
 	return result;
 end;
 
+function LootFilter.refreshItemInfoFromBag(item)
+	if (item["bag"] == nil) or (item["bag"] < 0) or (item["slot"] == nil) or (item["slot"] < 0) then
+		return;
+	end;
+	LootFilterScanningTooltip:ClearLines();
+	LootFilterScanningTooltip:SetBagItem(item["bag"], item["slot"]);
+	local result = "";
+	local line = "";
+	for i=1,LootFilterScanningTooltip:NumLines() do
+		line = getglobal("LootFilterScanningTooltipTextLeft" .. i);
+		if (line ~= nil) and (line:GetText() ~= nil) then
+			result = result..line:GetText().."\n";
+		end;
+		line = getglobal("LootFilterScanningTooltipTextRight" .. i);
+		if (line ~= nil) and (line:GetText() ~= nil) then
+			result = result..line:GetText().."\n";
+		end;
+	end
+	item["info"] = result;
+end;
+
 
 
 
