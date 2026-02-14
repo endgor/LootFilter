@@ -7,102 +7,171 @@ LOOT FILTER - PROJECT EBONHOLD - WoW WotLK 3.3.5a
 
 A rewrite of the classic LootFilter addon, now compatible with the Scavenger companion (works fine without it too).
 
+Automatically filter, delete, or sell looted items based on quality, type, value, or name patterns.
+
 
 INSTALLATION
 ------------
 Place the addon folder in your WoW AddOns directory. The folder **must** be
-named `LootFilter` (matching the .toc file):
+named `LootFilter`:
 
   `<WoW directory>\Interface\AddOns\LootFilter\`
-Biggest difference to the default addon is that we added a function for GetSellValue API instead of relying on a separate addon, this allows the addon to filter items based on vendor price.
 
-What the addon does:
-Automatically filter, delete, or sell looted items based on quality, type, value, or name patterns.
+Vendor prices work out of the box — no extra price addon required.
 
 
 COMMANDS
 --------
-  /lf            Open options window
-  /lf lootbot    Toggle loot bot mode (see Loot Bot Mode below)
-  /lf debug      Toggle debug diagnostic logging
-  /lf status     Show addon status
-  /lf help       Show commands
-
+  **/lf**              Open/close options window
+  **/lf lootbot**      Toggle loot bot mode
+  **/lf silence**      Toggle silence mode (suppress chat messages)
+  **/lf debug**        Toggle debug logging
+  **/lf status**       Show addon status
+  **/lf help**         Show commands
 
 QUICK START
 -----------
-1. Type /lf to open options
-2. Enable "Loot Filter" on General tab
+1. Type `/lf` to open options
+2. Enable "Loot Filter" on the General tab
 3. Use tabs to configure filters:
-   - QUALITY: Filter by rarity (Grey, Green, Blue, etc.)
-   - TYPE: Filter by type (Armor, Trade Goods, etc.)
-   - NAME: Keep/delete specific items by name
-   - VALUE: Filter by vendor price
-   - CLEAN: Sell/delete items at vendor
-
-4. For each filter choose: Default / Keep / Delete
+   - **Quality**: Filter by rarity (Grey through Legendary)
+   - **Type**: Filter by item type and subtype (Armor, Weapon, etc.)
+   - **Name**: Keep/delete specific items by name pattern
+   - **Value**: Filter by vendor price thresholds
+   - **Clean**: Sell or delete filtered items at a glance
+   - **Copy**: Copy settings between characters
+4. For each quality/type filter choose: Default / Keep / Delete
 
 
 FILTER PRIORITY
 ---------------
-Filters are evaluated in the following order. The first match wins:
+Filters are evaluated in this order — first match wins:
 
-  1. Keep Names       - Items on your keep name list are always kept
-  2. Delete Names     - Items on your delete name list are always deleted
-  3. Keep Properties  - Quality, type, or value rules that keep items
-  4. Delete Properties - Quality, type, or value rules that delete items
-  5. No Match         - Items that match nothing are kept by default
+  1. **Keep Names** — always kept
+  2. **Delete Names** — always deleted
+  3. **Keep Properties** — quality, type, or value rules that keep
+  4. **Delete Properties** — quality, type, or value rules that delete
+  5. **No Match** — kept by default
 
-Name filters always take priority over property filters. This means you
-can set broad rules like "keep all Rare items" and still force-delete a
-specific item by adding its name to the delete list (or vice versa).
-
-This priority applies everywhere: loot processing, the Clean tab, vendor
-selling, and loot bot mode.
+Name filters always beat property filters. So you can set broad rules
+like "delete all Grey items" and still keep a specific grey item by name.
 
 
-LOOT BOT MODE
---------------
-Toggle with: /lf lootbot (or /lf bot)
+GENERAL TAB
+-----------
+The General tab has the master enable toggle plus settings for:
 
-By default, Loot Filter only processes items you loot yourself through
-a loot window (right-clicking a corpse, opening a chest, etc.). This
-is the normal mode and it works whether loot bot is on or off.
+- **Scavenger Loot Filter** — Loot bot mode for auto-looting companions
+  (see Loot Bot Mode below)
+- **Loot Caching** — Auto-delete lowest-value items when bags get full
+- **Confirm item delete** — Require confirmation before destroying items
+- **Notification toggles** — Control which chat messages appear
+  (delete, keep, no match, container open, new version)
+- **Vendor behavior** — Auto-open at vendor, auto-sell filtered items
+- **Bag selection** — Choose which bags (Backpack, Bag 1–4) are filtered
 
-Loot bot mode adds an extra layer: it monitors your bags for items that
-appear without a loot window. This is designed for the Scavenger
-companion that loots on your behalf, but it works with any source that
-puts items directly into your bags.
 
-When you enable loot bot mode, a snapshot of your current bags is taken.
-Any items that appear after that point are detected and run through the
-same filters as normally looted items. When a loot window is open, bag
-monitoring is paused so items are not processed twice.
+QUALITY & TYPE FILTERING
+------------------------
+**Quality tab:** Set each rarity tier (Poor through Legendary, plus
+Heirloom and Quest) to Default / Keep / Delete.
 
-Both paths — normal looting and loot bot — use the exact same filter
-priority chain (Keep Names > Delete Names > Keep Properties > Delete
-Properties), so you will always get consistent results.
+**Type tab:** Pick an item type from the dropdown (Armor, Weapon,
+Consumable, Gem, Recipe, Trade Goods, etc.) then set each subtype to
+Default / Keep / Delete.
 
-Loot bot mode is a separate toggle because always-on bag monitoring
-could cause false positives — accidentally filtering items received
-from trade windows, mailbox, vendors, or quest rewards. Toggle it on
-when using a companion and off when you are done.
+Quest items are automatically kept when looted — see Quest Auto-Keep below.
 
 
 NAME PATTERNS
 -------------
-  Silk Cloth       Exact match
-  #cloth           Contains "cloth"
-  ##Soulbound      Tooltip contains "Soulbound"
+The Name tab has two text boxes: one for **keep**, one for **delete**.
+Enter one pattern per line.
 
-Add comments: Rugged Leather ; for crafting
+| Syntax | Meaning | Example |
+|--------|---------|---------|
+| `Item Name` | Exact match (case-insensitive) | `Silk Cloth` |
+| `*text` | Ends with | `*Ore` |
+| `text*` | Starts with | `Rugged*` |
+| `*text*` | Contains | `*Leather*` |
+| `#pattern` | Lua regex on item name | `#^Heavy.*Leather$` |
+| `##pattern` | Lua regex on tooltip text | `##Soulbound` |
+
+Add comments with a semicolon: `Rugged Leather ; for crafting`
+
+The default keep list includes `Hearthstone` so it is never filtered.
 
 
 VALUE FILTERING
 ---------------
-Set gold thresholds (0.1 = 10 silver):
-  - Delete items worth less than X gold
-  - Keep items worth more than X gold
+Set gold thresholds on the Value tab:
+
+- **Keep items worth more than X gold** (e.g. `0.5` = 50 silver)
+- **Delete items worth less than X gold** (e.g. `0.1` = 10 silver)
+
+A dropdown controls how value is calculated: per single item, per current
+stack, or per max stack size (default).
+
+On the General tab you can also enable:
+- **Auctioneer market prices** — Use market value instead of vendor price
+  (requires AucAdvanced addon)
+- **Keep items with no (known) value** — Prevent filtering items with no
+  price data
+
+The **free bag slots** field sets how many slots to keep open when loot
+caching is enabled.
+
+
+CLEAN TAB
+---------
+Shows all bag items that match a delete rule.
+
+- At a vendor the button says **Sell Items** — at all other times it says
+  **Delete Items**
+- **Shift-click** any item in the list to quick-add it to your keep list
+- Session stats at the bottom track items filtered, total value, and
+  value per hour
+
+
+LOOT BOT MODE
+--------------
+Toggle with `/lf lootbot` or the General tab checkbox.
+
+Normally the addon only filters items you loot through a loot window.
+Loot bot mode also monitors your bags for items that appear without one —
+designed for the Scavenger companion, but works with any source.
+
+When enabled, a bag snapshot is taken. New items are detected and filtered
+automatically. Monitoring pauses while loot, vendor, mail, trade, or
+auction windows are open to avoid false positives.
+
+Toggle it on when using a companion and off when you are done.
+
+
+SILENCE MODE
+------------
+`/lf silence` — Suppresses all filter chat messages. The addon keeps
+filtering, it just does so quietly.
+
+
+COPY SETTINGS
+-------------
+The Copy tab lets you copy a character's entire configuration to your
+current character, or delete another character's saved settings.
+
+
+QUEST AUTO-KEEP
+---------------
+Quest items are automatically added to your keep list when looted. If a
+quest item also matches a delete rule, the delete rule wins and the
+auto-keep entry is removed.
+
+
+LOCALIZATION
+------------
+Available in English, German, Spanish, French, Simplified Chinese, and
+Traditional Chinese. Selected automatically based on your WoW client locale.
+
 
 CREDITS
 -------

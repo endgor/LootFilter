@@ -1,10 +1,36 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v1.0.11:
+Added Scavenger Loot Filter toggle to General tab UI.
+Fixed safety checks for filtering, deletion, and item lookup.
+Rescan tooltip from bag slot for accurate bound-state info.
+Limit loot bot to only process new items added to bags.
+
+v1.0.10:
+Restored silence mode after reverts.
+Added silence mode to /lf status and /lf help output.
+
+v1.0.9:
+Added /lf silence command to suppress filter chat messages.
+Added wildcard (*) pattern matching for item name filters.
+
+v1.0.8:
+Fixed confirm-delete dialog callbacks ignoring button clicks.
+Fixed copySettings creating shallow reference instead of deep copy.
+Fixed 4 global variable leaks polluting the namespace.
+Fixed scheduler coroutine never recovering after an error.
+Hardened scheduler recovery by dropping failed tasks.
+Fixed setItemValue storing string "0" instead of number 0.
+Fixed nil crash in sortByValue comparator.
+Replaced seterrorhandler with pcall in matchItemNames.
+Validated item position before selling at vendor.
+Stored item values as copper integers to avoid float precision loss.
+Added installation path and saved variables reset instructions to README.
+
 v1.0.7:
-Added manual name filter priority override - manual keep/delete name entries now take precedence over all quality/type/value filters.
+Added manual name filter priority override - keep/delete name entries now take precedence over all quality/type/value filters.
 Restructured filter priority chain: Keep Names -> Delete Names -> Keep Properties -> Delete Properties -> No Match.
 Applied the same priority chain to constructCleanList so clean/sell/caching paths are consistent with loot processing.
-All existing name matching patterns (#, ##, exact) remain fully supported.
 
 v1.0.6:
 Fixed infinite loop when item not found in bags.
