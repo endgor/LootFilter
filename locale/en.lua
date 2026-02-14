@@ -156,6 +156,7 @@ LootFilter.Locale = {
 		["TYWeaponWands"]= "Wands",
 		
 		["OPEnable"]= "Enable Loot Filter",
+		["OPLootBot"]= "Enable Scavenger Loot Filter",
 		["OPCaching"]= "Enable Loot Caching",
 		["OPTooltips"]= "Show tooltips",
 		["OPNotifyDelete"]= "Notify on delete",
