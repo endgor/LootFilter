@@ -1,8 +1,4 @@
 function LootFilter.processItemStack()
-	if LootFilter.inDialog then
-		LootFilter.schedule(LootFilter.SCHEDULE_INTERVAL, LootFilter.processItemStack);
-		return;
-	end
 	if (table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) == 0) then
 		LootFilter.filterScheduled = false;
 		return;
@@ -13,6 +9,11 @@ function LootFilter.processItemStack()
 		LootFilter.filterScheduled = false;
 		return;
 	end;
+
+	if LootFilter.inDialog then
+		LootFilter.schedule(LootFilter.SCHEDULE_INTERVAL, LootFilter.processItemStack);
+		return;
+	end
 
 	local item = LootFilterVars[LootFilter.REALMPLAYER].itemStack[1];
 	LootFilter.debug("|cffffffcc[PROCESS]|r Processing item: " ..

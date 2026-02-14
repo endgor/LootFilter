@@ -396,11 +396,12 @@ function LootFilter.calculateCleanListValue()
 	local totalValue = 0;
 	local x = table.getn(LootFilter.cleanList);
 	for j = 1, x, 1 do
-		if (LootFilter.cleanList[j]["value"] < 0) then
-			totalValue = totalValue +
-			tonumber((LootFilter.cleanList[j]["value"] + 10000000) * LootFilter.cleanList[j]["amount"]);
+		local itemValue = tonumber(LootFilter.cleanList[j]["value"]) or 0;
+		local itemAmount = tonumber(LootFilter.cleanList[j]["amount"]) or 1;
+		if (itemValue < 0) then
+			totalValue = totalValue + (itemValue + 10000000) * itemAmount;
 		else
-			totalValue = totalValue + tonumber(LootFilter.cleanList[j]["value"] * LootFilter.cleanList[j]["amount"]);
+			totalValue = totalValue + itemValue * itemAmount;
 		end;
 	end;
 	return totalValue;

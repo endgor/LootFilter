@@ -77,53 +77,61 @@ function LootFilter.isBagUpdateContextBlocked()
 end
 
 function LootFilter.processBagUpdate()
-	if not LootFilterVars[LootFilter.REALMPLAYER].lootbotmode then
-		return;
-	end
-	if not LootFilterVars[LootFilter.REALMPLAYER].enabled then
-		return;
-	end
-	local blocked, frameName = LootFilter.isBagUpdateContextBlocked();
-	if blocked then
-		LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE skipped while " .. tostring(frameName) .. " is open");
-		LootFilter.takeBagSnapshot();
-		LootFilter.bagUpdatePending = false;
-		return;
-	end
-
-	local newItems, currentCounts = LootFilter.findNewItemsInBags();
-	LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE detected " .. tostring(table.getn(newItems)) .. " new item(s)");
-
-	for _, item in ipairs(newItems) do
-		LootFilter.debug("|cff44ff44[LOOTBOT]|r New item: " ..
-			tostring(item["name"]) ..
-			" (id=" .. tostring(item["id"]) .. ") bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]));
-		LootFilter.AddQuestItemToKeepList(item);
-		LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
-		table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
-
-		if GetSellValue then
-			LootFilter.sessionAdd(item);
-			LootFilterVars[LootFilter.REALMPLAYER].session["end"] = time();
-			LootFilter.sessionUpdateValues();
+	local ok, err = pcall(function()
+		if not LootFilterVars[LootFilter.REALMPLAYER].lootbotmode then
+			return;
 		end
-	end
+		if not LootFilterVars[LootFilter.REALMPLAYER].enabled then
+			return;
+		end
+		local blocked, frameName = LootFilter.isBagUpdateContextBlocked();
+		if blocked then
+			LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE skipped while " .. tostring(frameName) .. " is open");
+			LootFilter.takeBagSnapshot();
+			return;
+		end
 
-	LootFilter.bagSnapshot = currentCounts;
+		local newItems, currentCounts = LootFilter.findNewItemsInBags();
+		LootFilter.debug("|cff44ff44[LOOTBOT]|r BAG_UPDATE detected " .. tostring(table.getn(newItems)) .. " new item(s)");
 
-	if table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) > 0 then
-		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
-		if not LootFilter.filterScheduled then
-			LootFilter.filterScheduled = true;
-			if LootFilterVars[LootFilter.REALMPLAYER].caching then
-				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-			else
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
+		for _, item in ipairs(newItems) do
+			LootFilter.debug("|cff44ff44[LOOTBOT]|r New item: " ..
+				tostring(item["name"]) ..
+				" (id=" .. tostring(item["id"]) .. ") bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]));
+			LootFilter.AddQuestItemToKeepList(item);
+			LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
+			table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
+
+			if GetSellValue then
+				LootFilter.sessionAdd(item);
+				LootFilterVars[LootFilter.REALMPLAYER].session["end"] = time();
+				LootFilter.sessionUpdateValues();
 			end
 		end
-	end
 
+		LootFilter.bagSnapshot = currentCounts;
+
+		if table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) > 0 then
+			-- If filterScheduled is stuck (processing task died), force-reset it
+			if LootFilter.filterScheduled and GetTime() > LootFilter.LOOT_MAXTIME then
+				LootFilter.debug("|cffff4444[LOOTBOT]|r filterScheduled was stuck, resetting");
+				LootFilter.filterScheduled = false;
+			end
+			LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
+			if not LootFilter.filterScheduled then
+				LootFilter.filterScheduled = true;
+				if LootFilterVars[LootFilter.REALMPLAYER].caching then
+					LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
+					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
+				else
+					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
+				end
+			end
+		end
+	end)
+	if not ok then
+		LootFilter.debug("|cffff4444[LOOTBOT]|r Error in processBagUpdate: " .. tostring(err));
+	end
 	LootFilter.bagUpdatePending = false;
 end
 
