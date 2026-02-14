@@ -21,12 +21,13 @@ function LootFilter.matchProperties(key, value, item, keep)
 			reason = LootFilter.Locale.LocText["LTNoKnownValue"];
 		elseif (GetSellValue) then
 			local calculatedValue;
+			local itemValue = tonumber(item["value"]) or 0;
 			if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 1) then
-				calculatedValue = tonumber(item["value"]);
+				calculatedValue = itemValue;
 			elseif (LootFilterVars[LootFilter.REALMPLAYER].calculate == 2) then
-				calculatedValue = tonumber(item["value"] * item["amount"]);
+				calculatedValue = itemValue * (tonumber(item["amount"]) or 1);
 			else
-				calculatedValue = tonumber(item["value"] * item["stack"]);
+				calculatedValue = itemValue * (tonumber(item["stack"]) or 1);
 			end;
 			if (keep) and (LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"]) then
 				if (calculatedValue > tonumber(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"]) * 10000) then

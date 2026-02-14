@@ -17,14 +17,15 @@ end;
 
 
 function LootFilter.processCaching()
-	if LootFilter.inDialog then
-		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-		return;
-	end
 	if (GetTime() > LootFilter.LOOT_MAXTIME) then
 		LootFilter.filterScheduled = false;
 		return;
 	end;
+
+	if LootFilter.inDialog then
+		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
+		return;
+	end
 			
 	local slots = LootFilter.constructCleanList();
 	
@@ -37,12 +38,13 @@ function LootFilter.processCaching()
 			if (LootFilter.cleanList[1]["value"] < 0) then -- item matched a delete property
 				LootFilter.cleanList[1]["value"]  = LootFilter.cleanList[1]["value"] + 10000000; -- restore its original value
 			end;
+			local itemValue = tonumber(LootFilter.cleanList[1]["value"]) or 0;
 			if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 1) then
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]);
+				calculatedValue = itemValue;
 			elseif (LootFilterVars[LootFilter.REALMPLAYER].calculate == 2) then
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["amount"]);
+				calculatedValue = itemValue * (tonumber(LootFilter.cleanList[1]["amount"]) or 1);
 			else
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["stack"]);
+				calculatedValue = itemValue * (tonumber(LootFilter.cleanList[1]["stack"]) or 1);
 			end;
 			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
 			table.remove(LootFilter.cleanList, 1);
