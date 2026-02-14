@@ -88,21 +88,35 @@ function LootFilter.matchPropertyByType(item, list, keep, keyFilter)
 	return "";
 end;
 
--- Evaluate an item against all filter rules using the priority chain:
+-- Evaluate an item against all filter rules using a rarity-aware priority chain.
+--
+-- For common items (gray/white/green, rarity <= 2):
+--   Delete Quality fires early and overrides Keep Type — junk gets deleted.
+-- For rare+ items (blue/epic/legendary, rarity >= 3):
+--   Keep Type/Quality are checked first — rare items are protected.
+--
+-- Priority chain:
 --   1. Keep Names       (highest - explicit name always wins)
 --   2. Delete Names
 --   3. Keep Value       (valuable items override quality/type delete)
---   4. Delete Quality   (quality delete overrides type keep)
---   5. Delete Value     (value below threshold)
+--   4. Delete Quality   (gray/white/green only - overrides type keep)
+--   5. Delete Value     (below threshold)
 --   6. Keep Type
 --   7. Keep Quality
---   8. Delete Type
---   9. No match         (default: keep)
+--   8. Delete Quality   (blue+ that weren't saved by Keep Type/Quality)
+--   9. Delete Type
+--  10. No match         (default: keep)
 -- Returns: action ("keep", "delete", or nil), reason string
 function LootFilter.evaluateItem(item)
 	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
 	local deleteList = LootFilterVars[LootFilter.REALMPLAYER].deleteList;
 	local reason = "";
+
+	-- Resolve rarity for quality-aware priority decisions
+	if (item["rarity"] == nil) then
+		local _, _, rarity = GetItemInfo(item["id"]);
+		item["rarity"] = rarity;
+	end;
 
 	-- Priority 1: Keep Names (highest - specific item names always win)
 	reason = LootFilter.matchKeepNames(item);
@@ -125,11 +139,13 @@ function LootFilter.evaluateItem(item)
 		return "keep", reason;
 	end;
 
-	-- Priority 4: Delete Quality (strong delete signal, overrides type keep)
-	reason = LootFilter.matchPropertyByType(item, deleteList, false, "^QU");
-	if (reason ~= "") then
-		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (quality): " .. reason);
-		return "delete", reason;
+	-- Check Delete Quality once (used at two priority positions based on rarity)
+	local deleteQualityReason = LootFilter.matchPropertyByType(item, deleteList, false, "^QU");
+
+	-- Priority 4: Delete Quality for common items (gray/white/green override type keep)
+	if (deleteQualityReason ~= "") and ((item["rarity"] == nil) or (item["rarity"] <= 2)) then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (quality, common): " .. deleteQualityReason);
+		return "delete", deleteQualityReason;
 	end;
 
 	-- Priority 5: Delete Value (below threshold)
@@ -153,7 +169,13 @@ function LootFilter.evaluateItem(item)
 		return "keep", reason;
 	end;
 
-	-- Priority 8: Delete Type
+	-- Priority 8: Delete Quality for rare+ items (after Keep Type/Quality had their chance)
+	if (deleteQualityReason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (quality, rare+): " .. deleteQualityReason);
+		return "delete", deleteQualityReason;
+	end;
+
+	-- Priority 9: Delete Type
 	reason = LootFilter.matchPropertyByType(item, deleteList, false, "^TY");
 	if (reason ~= "") then
 		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (type): " .. reason);
