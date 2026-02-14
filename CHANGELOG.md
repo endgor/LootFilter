@@ -1,5 +1,9 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v1.0.12:
+Guard against accidental cursor item deletion during auto-delete.
+Revalidate item link in confirm-delete popup to prevent deleting wrong item after inventory shift.
+
 v1.0.11:
 Added Scavenger Loot Filter toggle to General tab UI.
 Fixed safety checks for filtering, deletion, and item lookup.
