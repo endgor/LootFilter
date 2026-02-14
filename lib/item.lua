@@ -27,6 +27,11 @@ function LootFilter.confirmDelete(item)
 					geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
 					return false;
 				end
+				local currentLink = GetContainerItemLink(data["bag"], data["slot"]);
+				if currentLink ~= data["link"] then
+					LootFilter.debug("|cffff4444[DELETE]|r Slot contents changed, aborting. Expected " .. tostring(data["link"]) .. " found " .. tostring(currentLink));
+					return false;
+				end
 				PickupContainerItem(data["bag"], data["slot"]);
 				if CursorHasItem() then
 					DeleteCursorItem();
@@ -54,6 +59,10 @@ end
 
 function LootFilter.deleteItemFromBag(item)
 	if (item ~= nil) then
+		if CursorHasItem() then
+			LootFilter.debug("|cffff4444[DELETE]|r Cursor already occupied, aborting delete");
+			return false;
+		end
 		LootFilter.debug("|cffff4444[DELETE]|r Attempting delete: " .. tostring(item["name"]) .. " bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]) .. " confirmdel=" .. tostring(LootFilterVars[LootFilter.REALMPLAYER].confirmdel));
 		if LootFilterVars[LootFilter.REALMPLAYER].confirmdel then
 			LootFilter.confirmDelete(item);
