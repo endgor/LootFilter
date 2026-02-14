@@ -165,6 +165,7 @@ if ( GetLocale() == "deDE" ) then
 			["OPValKeep"] = "Behalte Gegenst. mit mehr Wert als:",
 			["OPValDelete"] = "L\195\182sche Gegenst. mit weniger Wert als:",
 			["OPOpenVendor"] = "Fenster beim H\195\164ndler \195\182\ffnen",
+			["OPConfirmDelete"] = "L\195\182schen best\195\164tigen",
 			["OPAutoSell"] = "Automatisches verkaufen",
 			["OPNoValue"] = "Behalte Gegenst\195\164nde mit nicht bekanntem Wert",
 			["OPMarketValue"] = "Benutze Versteigerungspreise statt H\195\164ndlerreise",

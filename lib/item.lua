@@ -9,29 +9,35 @@ function LootFilter.confirmDelete(item)
 			end,
 			OnHide = function(data)
 				LootFilter.inDialog = false;
-				if (LootFilterVars[LootFilter.REALMPLAYER].caching) then -- Restart item processing after dialog is hidden
-					LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-				else
-					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
+				if not LootFilter.filterScheduled then
+					LootFilter.filterScheduled = true;
+					if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
+						LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
+						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
+					else
+						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
+					end;
 				end;
 			end,
 			OnAccept = function(self, data)
-				if not CursorHasItem() then
-					if not data["bag"] or not data["slot"] then
-						geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
-						return false;
-					end
-					PickupContainerItem(data["bag"], data["slot"]);
+				if CursorHasItem() then
+					ClearCursor();
 				end
-				DeleteCursorItem();
+				if not data["bag"] or not data["slot"] then
+					geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
+					return false;
+				end
+				PickupContainerItem(data["bag"], data["slot"]);
+				if CursorHasItem() then
+					DeleteCursorItem();
+				end
 			end,
 			OnCancel = function (self, data)
 				ClearCursor();
 			end,
 			OnUpdate = function (self)
 				if ( not CursorHasItem() ) then
-					StaticPopup_Hide("DELETE_ITEM");
+					StaticPopup_Hide("LOOTFILTER_CONFIRMDELETE");
 				end
 			end,
 			timeout = 30,

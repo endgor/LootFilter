@@ -113,7 +113,8 @@ function LootFilter.processBagUpdate()
 
 	if table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) > 0 then
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
-		if table.getn(LootFilter.timerArr) == 0 then
+		if not LootFilter.filterScheduled then
+			LootFilter.filterScheduled = true;
 			if LootFilterVars[LootFilter.REALMPLAYER].caching then
 				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
 				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
@@ -195,7 +196,7 @@ function LootFilter.OnEvent()
 	end;
 
 	if (event == "UI_INFO_MESSAGE") then
-		if (LootFilterVars[LootFilter.REALMPLAYER].deleteList["QUQuest"] == nil) then
+		if (LootFilterVars[LootFilter.REALMPLAYER].deleteList["QUhQuest"] == nil) then
 			if (string.find(arg1, "slain: ") ~= nil) and (string.find(arg1, "slain: ") > 0) then
 				return;
 			end;
@@ -253,7 +254,8 @@ function LootFilter.OnEvent()
 		end
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
 		LootFilter.itemOpen = false;
-		if (table.getn(LootFilter.timerArr) == 0) then
+		if not LootFilter.filterScheduled then
+			LootFilter.filterScheduled = true;
 			if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
 				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
 				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);

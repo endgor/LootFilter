@@ -4,11 +4,13 @@ function LootFilter.processItemStack()
 		return;
 	end
 	if (table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) == 0) then
+		LootFilter.filterScheduled = false;
 		return;
 	end;
 
 	if (GetTime() > LootFilter.LOOT_MAXTIME) then
 		LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
+		LootFilter.filterScheduled = false;
 		return;
 	end;
 

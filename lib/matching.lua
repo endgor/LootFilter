@@ -8,12 +8,12 @@ function LootFilter.matchProperties(key, value, item, keep)
 		if (item["rarity"] == value) then
 			reason = LootFilter.Locale.LocText["LTQualMatched"] .. " (" .. value .. ")";
 		elseif (value == -1) then
-			if (string.lower(item["type"]) == LootFilter.Locale.LocText["LTQuest"]) then
+			if item["type"] and (string.lower(item["type"]) == string.lower(LootFilter.Locale.LocText["LTQuest"])) then
 				reason = LootFilter.Locale.LocText["LTQuestItem"];
 			end;
 		end;
 	elseif (string.match(key, "^TY")) then
-		if (string.match(key, "^TY" .. item["type"])) and (item["subType"] == value) then
+		if item["type"] and item["subType"] and (string.match(key, "^TY" .. item["type"])) and (item["subType"] == value) then
 			reason = LootFilter.Locale.LocText["LTTypeMatched"] .. " (" .. value .. ")";
 		end;
 	elseif (string.match(key, "^VA")) then
@@ -111,8 +111,23 @@ function LootFilter.matchDeleteNames(item)
 end;
 
 function LootFilter.findItemInBags(item)
-	local x, y;
+	local x;
 	local containerItem = {};
+
+	-- If item already has a known bag/slot, verify it's still there by ID
+	if item["bag"] and item["bag"] >= 0 and item["slot"] and item["slot"] >= 0 then
+		local link = GetContainerItemLink(item["bag"], item["slot"]);
+		if link then
+			local id = LootFilter.getIdOfItem(link);
+			if id == item["id"] then
+				LootFilter.debug("|cff00ffff[FIND]|r Verified \"" ..
+					tostring(item["name"]) .. "\" at known bag=" .. item["bag"] .. " slot=" .. item["slot"]);
+				return item;
+			end
+		end
+	end
+
+	-- Fall back: search by item ID
 	item["bag"] = -1;
 	item["slot"] = -1;
 	item["count"] = 0;
@@ -123,21 +138,39 @@ function LootFilter.findItemInBags(item)
 			for i = 1, x, 1 do
 				containerItem["link"] = GetContainerItemLink(j, i);
 				if (containerItem["link"] ~= nil) then
-					containerItem["name"] = LootFilter.getNameOfItem(containerItem["link"]);
 					containerItem["id"] = LootFilter.getIdOfItem(containerItem["link"]);
-					if (containerItem["id"] >= 1) then
-						if (LootFilter.matchItemNames(item, containerItem["name"])) then
-							item["bag"] = j;
-							item["slot"] = i;
-							LootFilter.debug("|cff00ffff[FIND]|r Found \"" ..
-							tostring(item["name"]) .. "\" in bag=" .. j .. " slot=" .. i);
-							return item;
-						end;
+					if containerItem["id"] == item["id"] then
+						item["bag"] = j;
+						item["slot"] = i;
+						LootFilter.debug("|cff00ffff[FIND]|r Found \"" ..
+							tostring(item["name"]) .. "\" by ID in bag=" .. j .. " slot=" .. i);
+						return item;
 					end;
 				end;
 			end;
 		end;
 	end;
+
+	-- Last resort: search by name
+	for j = 0, 4, 1 do
+		if (LootFilterVars[LootFilter.REALMPLAYER].openbag[j]) then
+			x = GetContainerNumSlots(j);
+			for i = 1, x, 1 do
+				containerItem["link"] = GetContainerItemLink(j, i);
+				if (containerItem["link"] ~= nil) then
+					containerItem["name"] = LootFilter.getNameOfItem(containerItem["link"]);
+					if (LootFilter.matchItemNames(item, containerItem["name"])) then
+						item["bag"] = j;
+						item["slot"] = i;
+						LootFilter.debug("|cff00ffff[FIND]|r Found \"" ..
+							tostring(item["name"]) .. "\" by name in bag=" .. j .. " slot=" .. i);
+						return item;
+					end;
+				end;
+			end;
+		end;
+	end;
+
 	LootFilter.debug("|cff00ffff[FIND]|r \"" .. tostring(item["name"]) .. "\" NOT found in any bag");
 	return item;
 end;

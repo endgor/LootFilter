@@ -164,6 +164,7 @@ if ( GetLocale() == "zhCN" ) then
 			["OPValKeep"]= "不摧毁物品当价值高于",
 			["OPValDelete"]= "摧毁物品当价值低于",
 			["OPOpenVendor"]= "和商贩对话时打开",
+			["OPConfirmDelete"]= "确认删除",
 			["OPAutoSell"]= "自动开始出售",
 			["OPNoValue"]= "保留物品，当没有（已知）的价值", 
 			["OPMarketValue"]= "利用拍卖市场价格而非NPC售卖价格",

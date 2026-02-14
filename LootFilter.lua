@@ -16,7 +16,7 @@ LootFilter = {
 	NUMLINES = 10,
 	REALMPLAYER = "",
 
-	timerArr = {},
+	filterScheduled = false,
 	hooked = false,
 	lastUpdate = 0,
 	hasFocus = 0,

@@ -164,6 +164,7 @@ LootFilter.Locale = {
 			["OPValKeep"]= "Conserver les objets d'une |nvaleur de plus de (ex: 0.1po)",
 			["OPValDelete"]= "Supprimer les objets d'une |nvaleur de moins de (ex: 0,1po)",
 			["OPOpenVendor"]= "Ouvrir quand vous parlez a un vendeur",
+			["OPConfirmDelete"]= "Confirmer la suppression",
 			["OPAutoSell"]= "Vente Automatique",
 			["OPNoValue"]= "Conserver les articles sans valeur connue", 
 			["OPMarketValue"]= "Utiliser le prix du marche",

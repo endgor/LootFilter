@@ -167,6 +167,7 @@ LootFilter.Locale = {
 		["OPValKeep"]= "Mantener obj. que valgan + de",
 		["OPValDelete"]= "Borrar obj. que valgan - de",
 		["OPOpenVendor"]= "Abrir al hablar a vendedor",
+		["OPConfirmDelete"]= "Confirmar borrado",
 		["OPAutoSell"]= "Empezar a vender autom\195\161ticamente",
 		["OPNoValue"]= "Mantener objetos sin valor (conocido)", 
 		["OPMarketValue"]= "Usar precios de Auctioneer en vez de los de vendedor",

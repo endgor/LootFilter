@@ -22,6 +22,7 @@ function LootFilter.processCaching()
 		return;
 	end
 	if (GetTime() > LootFilter.LOOT_MAXTIME) then
+		LootFilter.filterScheduled = false;
 		return;
 	end;
 			
@@ -46,8 +47,10 @@ function LootFilter.processCaching()
 			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
 			table.remove(LootFilter.cleanList, 1);
 		end;
-		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);				
-	end;	
+		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
+	else
+		LootFilter.filterScheduled = false;
+	end;
 end;
 
 

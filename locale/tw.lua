@@ -167,6 +167,7 @@ if ( GetLocale() == "zhTW" ) then
 			["OPValKeep"]= "保留物品 - 出售價格大於",
 			["OPValDelete"]= "刪除物品 - 出售價格小於",
 			["OPOpenVendor"]= "與商人交談時自動開啟",
+			["OPConfirmDelete"]= "確認刪除",
 			["OPAutoSell"]= "自動開始出售",
 			["OPNoValue"]= "保留未知價格的物品", 
 			["OPMarketValue"]= "使用 Auctioneer 插件提供的拍賣場價格取代給商人的出售價格",
