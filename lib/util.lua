@@ -351,7 +351,6 @@ function LootFilter.constructCleanList()
 	LootFilter.cleanList = {};
 	local z = 1;
 	local slots = 0;
-	local totalValue = 0;
 	for j = 0, 4, 1 do
 		if (LootFilterVars[LootFilter.REALMPLAYER].openbag[j]) then
 			local x = GetContainerNumSlots(j);
@@ -365,23 +364,18 @@ function LootFilter.constructCleanList()
 					LootFilter.AddQuestItemToKeepList(item);
 					LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 
-					local reason = LootFilter.matchKeepNames(item);
-					if (reason ~= "") then
-						-- keep name takes highest priority, skip item
-					elseif (LootFilter.matchDeleteNames(item) ~= "") then
-						item["value"] = item["value"] - 10000000; -- delete name overrides keep properties
+					local action = LootFilter.evaluateItem(item);
+
+					if (action == "keep") then
+						-- skip item, don't add to clean list
+					elseif (action == "delete") then
+						item["value"] = item["value"] - 10000000; -- priority delete: sort to bottom
 						LootFilter.cleanList[z] = item;
 						z = z + 1;
 					else
-						reason = LootFilter.matchKeepProperties(item);
-						if (reason == "") then
-							reason = LootFilter.matchDeleteProperties(item);
-							if (reason ~= "") then
-								item["value"] = item["value"] - 10000000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
-							end;
-							LootFilter.cleanList[z] = item;
-							z = z + 1;
-						end;
+						-- No match: add with normal value (lowest delete priority)
+						LootFilter.cleanList[z] = item;
+						z = z + 1;
 					end;
 				else
 					slots = slots + 1;

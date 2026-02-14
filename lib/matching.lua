@@ -76,6 +76,95 @@ function LootFilter.matchDeleteProperties(item)
 	return reason;
 end;
 
+function LootFilter.matchPropertyByType(item, list, keep, keyFilter)
+	for key, value in pairs(list) do
+		if string.match(key, keyFilter) then
+			local reason = LootFilter.matchProperties(key, value, item, keep);
+			if (reason ~= "") then
+				return reason;
+			end;
+		end;
+	end;
+	return "";
+end;
+
+-- Evaluate an item against all filter rules using the priority chain:
+--   1. Keep Names       (highest - explicit name always wins)
+--   2. Delete Names
+--   3. Keep Value       (valuable items override quality/type delete)
+--   4. Delete Quality   (quality delete overrides type keep)
+--   5. Delete Value     (value below threshold)
+--   6. Keep Type
+--   7. Keep Quality
+--   8. Delete Type
+--   9. No match         (default: keep)
+-- Returns: action ("keep", "delete", or nil), reason string
+function LootFilter.evaluateItem(item)
+	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
+	local deleteList = LootFilterVars[LootFilter.REALMPLAYER].deleteList;
+	local reason = "";
+
+	-- Priority 1: Keep Names (highest - specific item names always win)
+	reason = LootFilter.matchKeepNames(item);
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cff00ff00KEEP|r (name): " .. reason);
+		return "keep", reason;
+	end;
+
+	-- Priority 2: Delete Names
+	reason = LootFilter.matchDeleteNames(item);
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (name): " .. reason);
+		return "delete", reason;
+	end;
+
+	-- Priority 3: Keep Value (valuable enough to override quality/type delete)
+	reason = LootFilter.matchPropertyByType(item, keepList, true, "^VA");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cff00ff00KEEP|r (value): " .. reason);
+		return "keep", reason;
+	end;
+
+	-- Priority 4: Delete Quality (strong delete signal, overrides type keep)
+	reason = LootFilter.matchPropertyByType(item, deleteList, false, "^QU");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (quality): " .. reason);
+		return "delete", reason;
+	end;
+
+	-- Priority 5: Delete Value (below threshold)
+	reason = LootFilter.matchPropertyByType(item, deleteList, false, "^VA");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (value): " .. reason);
+		return "delete", reason;
+	end;
+
+	-- Priority 6: Keep Type
+	reason = LootFilter.matchPropertyByType(item, keepList, true, "^TY");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cff00ff00KEEP|r (type): " .. reason);
+		return "keep", reason;
+	end;
+
+	-- Priority 7: Keep Quality
+	reason = LootFilter.matchPropertyByType(item, keepList, true, "^QU");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cff00ff00KEEP|r (quality): " .. reason);
+		return "keep", reason;
+	end;
+
+	-- Priority 8: Delete Type
+	reason = LootFilter.matchPropertyByType(item, deleteList, false, "^TY");
+	if (reason ~= "") then
+		LootFilter.debug("|cffffffcc[EVAL]|r => |cffff0000DELETE|r (type): " .. reason);
+		return "delete", reason;
+	end;
+
+	-- No match
+	LootFilter.debug("|cffffffcc[EVAL]|r => |cffffff00NO MATCH|r");
+	return nil, "";
+end;
+
 function LootFilter.matchKeepNames(item)
 	local reason = "";
 	if (LootFilterVars[LootFilter.REALMPLAYER].keepList["names"] ~= nil) then
