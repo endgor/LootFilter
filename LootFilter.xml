@@ -269,7 +269,7 @@
 								<Anchor point="LEFT" relativePoint="BOTTOM"
 									relativeTo="LootFilterFrameTitle">
 									<Offset>
-										<AbsDimension x="-297" y="-290"/>
+										<AbsDimension x="-297" y="-305"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -301,7 +301,18 @@
 							</Anchor>
 						</Anchors>
 					</Frame>
-					
+					<Frame name="LootFilterOPLootBot"
+						inherits="LootFilterOptionTemplate2" hidden="false">
+						<Anchors>
+							<Anchor point="LEFT" relativePoint="TOP"
+								relativeTo="LootFilterFrameTitle">
+								<Offset>
+									<AbsDimension x="-300" y="-125"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+					</Frame>
+
 					<Frame name="LootFilterOPNotifyDelete"
 						inherits="LootFilterOptionTemplate2" hidden="false">
 						<Anchors>
@@ -370,7 +381,7 @@
 							<Anchor point="LEFT" relativePoint="TOP"
 								relativeTo="LootFilterFrameTitle">
 								<Offset>
-									<AbsDimension x="100" y="-165"/>
+									<AbsDimension x="100" y="-180"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -381,7 +392,7 @@
 							<Anchor point="LEFT" relativePoint="TOP"
 								relativeTo="LootFilterFrameTitle">
 								<Offset>
-									<AbsDimension x="0" y="-165"/>
+									<AbsDimension x="0" y="-180"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -392,7 +403,7 @@
 							<Anchor point="LEFT" relativePoint="TOP"
 								relativeTo="LootFilterFrameTitle">
 								<Offset>
-									<AbsDimension x="-100" y="-165"/>
+									<AbsDimension x="-100" y="-180"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -403,7 +414,7 @@
 							<Anchor point="LEFT" relativePoint="TOP"
 								relativeTo="LootFilterFrameTitle">
 								<Offset>
-									<AbsDimension x="-200" y="-165"/>
+									<AbsDimension x="-200" y="-180"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -414,7 +425,7 @@
 							<Anchor point="LEFT" relativePoint="TOP"
 								relativeTo="LootFilterFrameTitle">
 								<Offset>
-									<AbsDimension x="-300" y="-165"/>
+									<AbsDimension x="-300" y="-180"/>
 								</Offset>
 							</Anchor>
 						</Anchors>

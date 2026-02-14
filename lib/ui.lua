@@ -120,6 +120,14 @@ function LootFilter.setRadioButtonValue(button)
 
 	if (name == "OPEnable") then
 		LootFilterVars[LootFilter.REALMPLAYER].enabled = checked;
+	elseif (name == "OPLootBot") then
+		LootFilterVars[LootFilter.REALMPLAYER].lootbotmode = checked;
+		if checked then
+			LootFilter.takeBagSnapshot();
+			LootFilter.print("|cff00ff00Loot Bot Mode ENABLED|r - Items added to bags will be filtered automatically.");
+		else
+			LootFilter.print("|cffff0000Loot Bot Mode DISABLED|r - Only items from loot windows will be filtered.");
+		end
 	elseif (name == "OPCaching") then
 		LootFilterVars[LootFilter.REALMPLAYER].caching = checked;
 		if (checked) then
@@ -177,6 +185,8 @@ function LootFilter.getRadioButtonValue(button)
 	fontString:SetText(LootFilter.Locale.radioButtonsText[name]);
 	if (name == "OPEnable") then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].enabled);
+	elseif (name == "OPLootBot") then
+		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].lootbotmode);
 	elseif (name == "OPCaching") then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].caching);
 	elseif (name == "OPNoValue") then
