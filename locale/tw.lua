@@ -164,6 +164,7 @@ if ( GetLocale() == "zhTW" ) then
 			["OPNotifyNoMatch"]= "無符合條件時提示訊息",
 			["OPNotifyOpen"]= "自動開啟提示訊息",
 			["OPNotifyNew"]= "新版本提示訊息",
+			["OPConfirmDelete"] = "刪除前確認",
 			["OPValKeep"]= "保留物品 - 出售價格大於",
 			["OPValDelete"]= "刪除物品 - 出售價格小於",
 			["OPOpenVendor"]= "與商人交談時自動開啟",

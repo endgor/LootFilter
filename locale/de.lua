@@ -162,6 +162,7 @@ if ( GetLocale() == "deDE" ) then
 			["OPNotifyNoMatch"] = "Benachr.: Nicht gefunden",
 			["OPNotifyOpen"] = "Benachr.: \195\150ffnen",
 			["OPNotifyNew"] = "Benachr. \195\188ber neue Version" ,
+			["OPConfirmDelete"] = "L\195\182schen best\195\164tigen",
 			["OPValKeep"] = "Behalte Gegenst. mit mehr Wert als:",
 			["OPValDelete"] = "L\195\182sche Gegenst. mit weniger Wert als:",
 			["OPOpenVendor"] = "Fenster beim H\195\164ndler \195\182\ffnen",

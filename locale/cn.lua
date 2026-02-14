@@ -161,6 +161,7 @@ if ( GetLocale() == "zhCN" ) then
 			["OPNotifyNoMatch"]= "无匹配项时通知",
 			["OPNotifyOpen"]= "打开时通知",
 			["OPNotifyNew"]= "新版本时通知",
+			["OPConfirmDelete"] = "删除物品前确认",
 			["OPValKeep"]= "不摧毁物品当价值高于",
 			["OPValDelete"]= "摧毁物品当价值低于",
 			["OPOpenVendor"]= "和商贩对话时打开",

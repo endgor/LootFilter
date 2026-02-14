@@ -161,6 +161,7 @@ LootFilter.Locale = {
 			["OPNotifyNoMatch"]= "Notifier quand rien ne correspond",
 			["OPNotifyOpen"]= "Notifier quand ouverture",
 			["OPNotifyNew"]= "Notifier si nouvelle version",
+			["OPConfirmDelete"] = "Confirmer la suppression",
 			["OPValKeep"]= "Conserver les objets d'une |nvaleur de plus de (ex: 0.1po)",
 			["OPValDelete"]= "Supprimer les objets d'une |nvaleur de moins de (ex: 0,1po)",
 			["OPOpenVendor"]= "Ouvrir quand vous parlez a un vendeur",

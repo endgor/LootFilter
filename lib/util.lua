@@ -106,10 +106,13 @@ function LootFilter.command(cmd)
 		LootFilter.toggleWindow();
 	elseif (args[1] == "lootbot" or args[1] == "bot") then
 		LootFilterVars[LootFilter.REALMPLAYER].lootbotmode = not LootFilterVars[LootFilter.REALMPLAYER].lootbotmode;
+		LootFilter.bagUpdatePending = false;
 		if LootFilterVars[LootFilter.REALMPLAYER].lootbotmode then
 			LootFilter.takeBagSnapshot(); -- Take fresh snapshot when enabling
+			LootFilter.lootbotPrimed = true;
 			LootFilter.print("|cff00ff00Loot Bot Mode ENABLED|r - Items added to bags will be filtered automatically.");
 		else
+			LootFilter.lootbotPrimed = false;
 			LootFilter.print("|cffff0000Loot Bot Mode DISABLED|r - Only items from loot windows will be filtered.");
 		end
 	elseif (args[1] == "debug") then
@@ -150,10 +153,17 @@ function LootFilter.constructCleanList()
 					item["amount"] = LootFilter.getStackSizeOfItem(item);
 					LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready earlier
 
-					local reason = LootFilter.matchKeepProperties(item);
-					if (reason == "") then
+					local reason = LootFilter.matchDeleteNameProperties(item);
+					local shouldDelete = (reason ~= "");
+					if (not shouldDelete) then
+						reason = LootFilter.matchKeepProperties(item);
+					end;
+					if (not shouldDelete) and (reason == "") then
 						reason = LootFilter.matchDeleteProperties(item); -- items that match delete properties should be deleted first
-						if (reason ~= "") then
+						shouldDelete = (reason ~= "");
+					end;
+					if (reason == "") or shouldDelete then
+						if (shouldDelete) then
 							item["value"] = item["value"] - 1000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
 						end;
 						LootFilter.cleanList[z] = item;
@@ -184,7 +194,14 @@ end;
 
 function LootFilter.copySettings()
 	local realmPlayer = UIDropDownMenu_GetText(LootFilterSelectDropDown);
-	LootFilterVars[LootFilter.REALMPLAYER] = LootFilterVars[realmPlayer];
+	if (realmPlayer == nil) or (LootFilterVars[realmPlayer] == nil) then
+		return;
+	end;
+	LootFilterVars[LootFilter.REALMPLAYER] = LootFilter.cloneTable(LootFilterVars[realmPlayer]);
+	LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
+	if (LootFilterVars[LootFilter.REALMPLAYER].session == nil) then
+		LootFilter.sessionReset();
+	end;
 	LootFilter.getNames();
 	LootFilter.getNamesDelete();
 	LootFilter.getItemValue();
@@ -269,3 +286,19 @@ function LootFilter.deleteTable(t)
 	end
 end
 
+function LootFilter.cloneTable(source, visited)
+	if type(source) ~= "table" then
+		return source;
+	end
+	visited = visited or {};
+	if visited[source] then
+		return visited[source];
+	end
+	local target = {};
+	visited[source] = target;
+	for k, v in pairs(source) do
+		local clonedKey = LootFilter.cloneTable(k, visited);
+		target[clonedKey] = LootFilter.cloneTable(v, visited);
+	end
+	return target;
+end

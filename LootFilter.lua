@@ -26,9 +26,9 @@ LootFilter = {
 	bagSnapshot = {};
 	bagUpdatePending = false;
 	lootWindowOpen = false;
+	lootbotPrimed = false;
 	BAG_UPDATE_DELAY = 1.0; -- Delay before processing bag updates (allows multiple items to arrive)
 };
-
 
 
 

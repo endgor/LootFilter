@@ -164,6 +164,7 @@ LootFilter.Locale = {
 		["OPNotifyNoMatch"]= "Avisar cuando no coincide ning\195\186n criterio de filtrado",
 		["OPNotifyOpen"]= "Avisar al abrir",
 		["OPNotifyNew"]= "Avisar de nueva versi\195\179n",
+		["OPConfirmDelete"] = "Confirmar eliminaci\195\179n",
 		["OPValKeep"]= "Mantener obj. que valgan + de",
 		["OPValDelete"]= "Borrar obj. que valgan - de",
 		["OPOpenVendor"]= "Abrir al hablar a vendedor",
@@ -263,4 +264,3 @@ BINDING_NAME_LFINT_TXT_TOGGLE = "Toggle window";
 BINDING_HEADER_LFINT_TXT_LOOTFILTER = "Loot Filter";
 
 end
-

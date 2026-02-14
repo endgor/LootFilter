@@ -17,21 +17,28 @@ function LootFilter.confirmDelete(item)
 				end;
 			end,
 			OnAccept = function(data)
-				if not CursorHasItem() then
-					if not data["bag"] or not data["slot"] then
-						geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
-						return false;
-					end
+				ClearCursor();
+				if not data["bag"] or not data["slot"] then
+					geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
+					return false;
+				end
+				local _, stackCount = GetContainerItemInfo(data["bag"], data["slot"]);
+				stackCount = (stackCount and stackCount > 0) and stackCount or 1;
+				if (data["deleteCount"] ~= nil) and (tonumber(data["deleteCount"]) ~= nil) and (stackCount > tonumber(data["deleteCount"])) then
+					SplitContainerItem(data["bag"], data["slot"], tonumber(data["deleteCount"]));
+				else
 					PickupContainerItem(data["bag"], data["slot"]);
 				end
-				DeleteCursorItem();
+				if CursorHasItem() then
+					DeleteCursorItem();
+				end
 			end,
 			OnCancel = function (data)
 				ClearCursor();
 			end,
 			OnUpdate = function (data)
 				if ( not CursorHasItem() ) then
-					StaticPopup_Hide("DELETE_ITEM");
+					StaticPopup_Hide("LOOTFILTER_CONFIRMDELETE");
 				end
 			end,
 			timeout = 30,
@@ -46,20 +53,37 @@ function LootFilter.confirmDelete(item)
 	dialog.data = item;
 end
 
+local function pickupItemForDelete(item)
+	if not item["bag"] or not item["slot"] then
+		return false;
+	end
+	local _, stackCount = GetContainerItemInfo(item["bag"], item["slot"]);
+	stackCount = (stackCount and stackCount > 0) and stackCount or 1;
+	local deleteCount = tonumber(item["deleteCount"]);
+	if (deleteCount ~= nil) and (deleteCount > 0) and (stackCount > deleteCount) then
+		SplitContainerItem(item["bag"], item["slot"], deleteCount);
+	else
+		PickupContainerItem(item["bag"], item["slot"]);
+	end
+	return CursorHasItem();
+end
+
 function LootFilter.deleteItemFromBag(item)
 	if (item ~= nil) then
 		LootFilter.debug("|cffff4444[DELETE]|r Attempting delete: " .. tostring(item["name"]) .. " bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]) .. " confirmdel=" .. tostring(LootFilterVars[LootFilter.REALMPLAYER].confirmdel));
 		if LootFilterVars[LootFilter.REALMPLAYER].confirmdel then
 			LootFilter.confirmDelete(item);
 		else
-			PickupContainerItem(item["bag"], item["slot"]);
-			local hasItem = CursorHasItem();
+			ClearCursor();
+			local hasItem = pickupItemForDelete(item);
 			LootFilter.debug("|cffff4444[DELETE]|r PickupContainerItem => CursorHasItem=" .. tostring(hasItem));
 			if hasItem then
 				DeleteCursorItem();
+				ClearCursor();
+				return true;
 			end
-			local myTime = GetTime();
-			return true;
+			ClearCursor();
+			return false;
 		end
 	end;
 	return false;
@@ -69,6 +93,9 @@ end;
 function LootFilter.getStackSizeOfItem(item)
 	local amount;
 	_, amount, _, _, _ = GetContainerItemInfo(item["bag"], item["slot"]);
+	if (amount == nil) or (amount <= 0) then
+		amount = 1;
+	end
 	return amount;
 end;
 
@@ -82,7 +109,11 @@ end;
 
 function LootFilter.getMaxStackSizeOfItem(item)
 	local _, _, _, _, _, _, _, stackSize = GetItemInfo(item["id"])
-	return tonumber(stackSize);
+	stackSize = tonumber(stackSize);
+	if (stackSize == nil) or (stackSize <= 0) then
+		stackSize = 1;
+	end
+	return stackSize;
 end;
 
 function LootFilter.getValueOfItem(item)
@@ -194,9 +225,6 @@ function LootFilter.getExtendedItemInfo(item)
 	end
 	return result;
 end;
-
-
-
 
 
 
