@@ -535,16 +535,11 @@ local function createNamesPage(parent)
 	keepEdit:SetAutoFocus(false)
 	keepEdit:SetMaxLetters(7500)
 	keepEdit:SetFontObject(ChatFontNormal)
-	keepEdit:SetScript("OnShow", function()
-		keepEdit.loading = true
-		LootFilter.getNames()
-		keepEdit.loading = false
-		keepEdit.max = nil
-	end)
+	keepEdit:SetScript("OnShow", function() LootFilter.getNames() end)
 	keepEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
 		keepScroll:UpdateScrollChildRect()
-		if keepEdit.loading then return end
+		if not keepEdit:HasFocus() then return end
 		local mn, mx = scrollBar:GetMinMaxValues()
 		if mx > 0 and (keepEdit.max ~= mx) then
 			keepEdit.max = mx
@@ -585,16 +580,11 @@ local function createNamesPage(parent)
 	delEdit:SetAutoFocus(false)
 	delEdit:SetMaxLetters(7500)
 	delEdit:SetFontObject(ChatFontNormal)
-	delEdit:SetScript("OnShow", function()
-		delEdit.loading = true
-		LootFilter.getNamesDelete()
-		delEdit.loading = false
-		delEdit.max = nil
-	end)
+	delEdit:SetScript("OnShow", function() LootFilter.getNamesDelete() end)
 	delEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
 		delScroll:UpdateScrollChildRect()
-		if delEdit.loading then return end
+		if not delEdit:HasFocus() then return end
 		local mn, mx = scrollBar:GetMinMaxValues()
 		if mx > 0 and (delEdit.max ~= mx) then
 			delEdit.max = mx
