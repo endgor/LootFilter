@@ -859,13 +859,6 @@ local function createValuesPage(parent)
 	delVal:SetScript("OnEnter", function() LootFilter.showTooltip(delVal, "LToolTip7") end)
 	delVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	-- Hidden keep-threshold elements (backend still reads these values)
-	local keepValOpt = createCheckOption(page, "LootFilterOPValKeep", 10, -106)
-	keepValOpt:Hide()
-	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -106, 40)
-	keepVal:Hide()
-	keepValBG:Hide()
-
 	-- No-value option
 	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -106)
 	noValOpt:Hide()
@@ -1143,14 +1136,19 @@ local function createHelpPage(parent)
 		"whether to keep or delete it.\n\n" ..
 		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  highest priority, always kept\n" ..
 		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted\n" ..
-		"|cffffd100 3.|r  |cffffffffQuality|r |cff888888>|r |cffffffffType|r |cff888888>|r |cffffffffValue|r  " ..
-		"|cff888888(Filters + Values tabs)|r\n" ..
-		"|cffffd100 4.|r  |cffffffffNo match|r  —  kept by default\n\n" ..
+		"|cffffd100 3.|r  |cffffffffQuality / Type|r  |cff888888(Filters tab)|r  —  " ..
+		"last match wins between them\n" ..
+		"|cffffd100 4.|r  |cffffffffValue|r  |cff888888(Values tab)|r  —  " ..
+		"catch-all, only if no quality/type rule matched\n" ..
+		"|cffffd100 5.|r  |cffffffffNo match|r  —  kept by default\n\n" ..
 		"|cffffffffName rules always win.|r A keep-name overrides any delete\n" ..
 		"property. A delete-name overrides any keep property.\n\n" ..
-		"For property filters (step 3), each is checked in order and\n" ..
-		"|cffffffffthe last matching rule wins.|r For example, if Quality is set\n" ..
-		"to keep but Value says delete, the item is deleted."
+		"|cffffffffQuality and Type rules are authoritative.|r If you set\n" ..
+		"Grey to Delete, all grey items are deleted regardless of value.\n\n" ..
+		"|cffffffffValue is a catch-all.|r It only deletes items that no\n" ..
+		"quality or type rule matched. For example, a blue item with\n" ..
+		"no type rule set will be deleted if it falls below the\n" ..
+		"value threshold."
 	)
 
 	-- Section: Name Filters
@@ -1454,8 +1452,6 @@ function LootFilter.setRadioButtonValue(button)
 		LootFilterVars[LootFilter.REALMPLAYER].notifynomatch = checked
 	elseif name == "OPNotifyOpen" then
 		LootFilterVars[LootFilter.REALMPLAYER].notifyopen = checked
-	elseif name == "OPValKeep" then
-		LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"] = checked
 	elseif name == "OPValDelete" then
 		LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAOn"] = checked
 	elseif name == "OPOpenVendor" then
@@ -1503,8 +1499,6 @@ function LootFilter.getRadioButtonValue(button)
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifyopen)
 	elseif name == "OPNotifyNoMatch" then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifynomatch)
-	elseif name == "OPValKeep" then
-		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"])
 	elseif name == "OPValDelete" then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAOn"])
 	elseif name == "OPOpenVendor" then
@@ -1532,10 +1526,6 @@ function LootFilter.setItemValue()
 	if value == nil then value = 0 end
 	LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"] = value
 
-	value = tonumber(LootFilterEditBox4:GetText())
-	if value == nil then value = 0 end
-	LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"] = value
-
 	value = tonumber(LootFilterEditBox5:GetText())
 	if value == nil then value = 0 end
 	LootFilterVars[LootFilter.REALMPLAYER].freebagslots = value
@@ -1550,14 +1540,6 @@ function LootFilter.getItemValue()
 		value = "0"
 	end
 	LootFilterEditBox3:SetText(value)
-
-	value = ""
-	if LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"] ~= nil and LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"] ~= "" then
-		value = LootFilterVars[LootFilter.REALMPLAYER].keepList["VAValue"]
-	else
-		value = "0"
-	end
-	LootFilterEditBox4:SetText(value)
 
 	value = ""
 	if LootFilterVars[LootFilter.REALMPLAYER].freebagslots ~= nil and LootFilterVars[LootFilter.REALMPLAYER].freebagslots ~= "" then
