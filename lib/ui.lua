@@ -537,5 +537,10 @@ function LootFilter.initCopyTab()
 		LootFilterEditBoxTitleCopy3:SetText(LootFilter.Locale.LocText["LTNoOtherCharacterToCopySettings"]);
 		LootFilterEditBoxTitleCopy4:Hide();
 		LootFilterEditBoxTitleCopy5:Hide();
+	else
+		LootFilterButtonRealCopy:Show();
+		LootFilterSelectDropDown:Show();
+		LootFilterButtonRealDelete:Show();
+		LootFilterEditBoxTitleCopy3:SetText(LFINT_TXT_SELECTCHARCOPY);
 	end;
 end;
