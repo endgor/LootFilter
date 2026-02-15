@@ -268,11 +268,6 @@ local function layoutTypeRows()
 				if string.find(string.lower(row.displayName), searchLower, 1, true) then
 					matchingParents[row.parentType] = true
 				end
-			else
-				-- Also match on category name itself (shows all its subtypes)
-				if string.find(string.lower(row.displayName), searchLower, 1, true) then
-					matchingParents[row.typeName] = true
-				end
 			end
 		end
 	end
@@ -310,8 +305,7 @@ local function layoutTypeRows()
 		if row.isSubtype then
 			local visible = false
 			if searching then
-				-- Show if subtype name matches OR parent category name matched
-				visible = matchingParents[row.parentType] ~= nil
+				visible = string.find(string.lower(row.displayName), searchLower, 1, true) ~= nil
 			else
 				visible = expandedTypes[row.parentType] ~= nil
 			end
@@ -438,7 +432,7 @@ end
 
 local function createTypeSubRow(parent, key, displayName, parentTypeName)
 	local row = CreateFrame("Frame", nil, parent)
-	row:SetWidth(520)
+	row:SetWidth(496)
 	row:SetHeight(18)
 	row:EnableMouse(true)
 	row.isSubtype = true
