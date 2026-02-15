@@ -1213,6 +1213,12 @@ end
 function LootFilter.buildUI()
 	local main = LootFilterOptions
 
+	-- Solid background behind the dialog texture to reduce transparency
+	local solidBG = main:CreateTexture(nil, "BACKGROUND")
+	solidBG:SetTexture(0, 0, 0, 0.75)
+	solidBG:SetPoint("TOPLEFT", main, "TOPLEFT", 12, -12)
+	solidBG:SetPoint("BOTTOMRIGHT", main, "BOTTOMRIGHT", -12, 12)
+
 	-- Close X button at top-right
 	local closeX = CreateFrame("Button", "LootFilterCloseX", main, "UIPanelCloseButton")
 	closeX:SetPoint("TOPRIGHT", main, "TOPRIGHT", -4, -4)
