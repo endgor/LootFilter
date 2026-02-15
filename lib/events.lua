@@ -297,7 +297,7 @@ function LootFilter.OnEvent()
 				LootFilter.sellQueue = 1;
 				LootFilter.deleteItems(GetTime() + LootFilter.LOOT_TIMEOUT, false);
 			end;
-			LootFilter.selectButton(LootFilterButtonClean, LootFilterFrameClean);
+			LootFilter.navigateTo("Cleanup");
 		end;
 	end;
 
@@ -416,9 +416,8 @@ function LootFilter.OnEvent()
 
 			LootFilter.initTypeTab();
 			LootFilter.initQualityTab();
-			UIDropDownMenu_Initialize(LootFilterSelectDropDownType, LootFilter.SelectDropDownType_Initialize);
 			UIDropDownMenu_Initialize(LootFilterSelectDropDownCalculate, LootFilter.SelectDropDownCalculate_Initialize);
-			LootFilter.SelectDropDown_Initialize();
+			UIDropDownMenu_Initialize(LootFilterSelectDropDown, LootFilter.SelectDropDown_Initialize);
 
 			LootFilter.navigateTo("Filters");
 

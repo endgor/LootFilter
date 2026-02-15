@@ -423,6 +423,7 @@ function LootFilter.copySettings()
 	LootFilter.getNames();
 	LootFilter.getNamesDelete();
 	LootFilter.getItemValue();
+	LootFilter.refreshUI();
 	LootFilterEditBoxTitleCopy5:Hide();
 	LootFilterEditBoxTitleCopy4:Show();
 	return;
@@ -434,7 +435,7 @@ function LootFilter.deleteSettings()
 		LootFilter.deleteTable(LootFilterVars[realmPlayer]);
 		LootFilterVars[realmPlayer] = nil;
 		UIDropDownMenu_SetSelectedValue(LootFilterSelectDropDown, nil);
-		LootFilter.SelectDropDown_Initialize();
+		UIDropDownMenu_Initialize(LootFilterSelectDropDown, LootFilter.SelectDropDown_Initialize);
 		LootFilterEditBoxTitleCopy4:Hide();
 		LootFilterEditBoxTitleCopy5:Show();
 		LootFilter.initCopyTab();

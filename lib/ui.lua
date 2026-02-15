@@ -237,7 +237,7 @@ local function getHeaderCounts(headerRow)
 	return total, keeps, deletes
 end
 
-local function updateHeaderStateLabel(headerRow)
+local function updateHeaderStateLabel(headerRow, highlight)
 	local total, keeps, deletes = getHeaderCounts(headerRow)
 	if total == 0 then
 		headerRow.stateLabel:SetText("")
@@ -245,14 +245,16 @@ local function updateHeaderStateLabel(headerRow)
 	end
 	local active = keeps + deletes
 	local color
-	if active == 0 then
-		color = "ff888888"      -- grey: nothing set
+	if highlight then
+		color = "ffffffff"          -- white: hover highlight
+	elseif active == 0 then
+		color = "ff888888"          -- grey: nothing set
 	elseif deletes == 0 then
-		color = "ff33ff33"      -- green: all active are KEEP
+		color = "ff33ff33"          -- green: all active are KEEP
 	elseif keeps == 0 then
-		color = "ffff3333"      -- red: all active are DELETE
+		color = "ffff3333"          -- red: all active are DELETE
 	else
-		color = "ffffd100"      -- gold: mix of keep and delete
+		color = "ffffd100"          -- gold: mix of keep and delete
 	end
 	headerRow.stateLabel:SetText("|c" .. color .. "(" .. active .. "/" .. total .. ")|r")
 end
@@ -379,6 +381,18 @@ local function createTypeHeaderRow(parent, typeName, displayName)
 	stateBtn:SetWidth(60)
 	stateBtn:SetHeight(20)
 	stateBtn:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+
+	stateBtn:SetScript("OnEnter", function(self)
+		updateHeaderStateLabel(row, true)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Click to change all", 1, 1, 1)
+		GameTooltip:Show()
+	end)
+	stateBtn:SetScript("OnLeave", function()
+		updateHeaderStateLabel(row)
+		GameTooltip:Hide()
+	end)
+
 	stateBtn:SetScript("OnClick", function()
 		local subtypes = getSubtypeRows(typeName)
 		if #subtypes == 0 then return end
@@ -434,10 +448,6 @@ local function createTypeSubRow(parent, key, displayName, parentTypeName)
 	row.parentType = parentTypeName
 	row.typeKey = key
 	row.displayName = displayName
-
-	-- Hidden DKD frame so backend matching code can find it by name
-	local hidden = CreateFrame("Frame", "LootFilter" .. key, parent, "LootFilterDKDOptionsTemplate")
-	hidden:Hide()
 
 	local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	label:SetPoint("LEFT", row, "LEFT", 4, 0)
@@ -682,10 +692,6 @@ local function createFiltersPage(parent)
 	typeScrollChild:SetHeight(1)
 	typeScroll:SetScrollChild(typeScrollChild)
 
-	-- Hidden type dropdown (referenced by dropdown init code)
-	local hiddenDropdown = CreateFrame("Button", "LootFilterSelectDropDownType", page, "UIDropDownMenuTemplate")
-	hiddenDropdown:Hide()
-
 	return page
 end
 
@@ -880,7 +886,6 @@ local function createValuesPage(parent)
 	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -106, 40)
 	keepVal:Hide()
 	keepValBG:Hide()
-	LootFilterTextBackground4 = keepValBG
 
 	-- No-value option
 	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -106)
@@ -1014,9 +1019,6 @@ local function createCleanupPage(parent)
 		LootFilter.constructCleanList()
 	end)
 
-	-- Global alias for events.lua
-	LootFilterFrameClean = page
-
 	return page
 end
 
@@ -1082,6 +1084,7 @@ local function createImportPage(parent)
 
 	local copyDrop = CreateFrame("Button", "LootFilterSelectDropDown", page, "UIDropDownMenuTemplate")
 	copyDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -68)
+	UIDropDownMenu_SetWidth(copyDrop, 200)
 
 	local copyBtn = CreateFrame("Button", "LootFilterButtonRealCopy", page, "GameMenuButtonTemplate")
 	copyBtn:SetWidth(110)
@@ -1197,15 +1200,6 @@ function LootFilter.navigateTo(pageName)
 	LootFilter.currentPage = pageName
 end
 
--- Backward compat: events.lua calls selectButton(LootFilterButtonClean, LootFilterFrameClean)
-function LootFilter.selectButton(button, frame)
-	if frame == LootFilterFrameClean then
-		LootFilter.navigateTo("Cleanup")
-	else
-		LootFilter.navigateTo("Filters")
-	end
-end
-
 -- -------------------------------------------------------------------------
 -- Build UI (called once from LootFilter.xml OnLoad)
 -- -------------------------------------------------------------------------
@@ -1248,11 +1242,6 @@ function LootFilter.buildUI()
 	pageFrames["Import"]   = createImportPage(content)
 	pageFrames["Help"]     = createHelpPage(content)
 
-	-- Global aliases for backward compat
-	LootFilterFrameGeneral = pageFrames["Settings"]
-	LootFilterButtonClean = sidebarButtons["Cleanup"]
-	LootFilterButtonGeneral = sidebarButtons["Settings"]
-
 	-- Set title
 	LootFilter.setTitle()
 
@@ -1280,10 +1269,6 @@ function LootFilter.initTypeTab()
 		local headerRow = createTypeHeaderRow(typeScrollChild, typeName, typeName)
 		table.insert(typeRows, headerRow)
 
-		-- Hidden parent frame for backend compat
-		local hiddenParent = CreateFrame("Frame", "LootFilterDKDType" .. typeName, LootFilterPageFilters)
-		hiddenParent:Hide()
-
 		for key, displayName in LootFilter.sortedPairs(LootFilter.Locale.radioButtonsText) do
 			if string.match(key, "^TY" .. typeName) then
 				local subRow = createTypeSubRow(typeScrollChild, key, displayName, typeName)
@@ -1296,6 +1281,19 @@ function LootFilter.initTypeTab()
 	end
 
 	layoutTypeRows()
+end
+
+function LootFilter.refreshUI()
+	-- Refresh quality chips
+	LootFilter.initQualityTab()
+	-- Refresh type row visuals
+	for _, row in ipairs(typeRows) do
+		if row.isSubtype then
+			updateTypeRowVisual(row)
+		else
+			updateHeaderStateLabel(row)
+		end
+	end
 end
 
 -- -------------------------------------------------------------------------
@@ -1326,13 +1324,11 @@ function LootFilter.setNames()
 	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	LootFilterVars[LootFilter.REALMPLAYER].keepList["names"] = {}
 	local result = LootFilterEditBox1:GetText() .. "\n"
-	if result ~= nil then
-		for w in string.gmatch(result, "[^\n]+\n") do
-			w = string.gsub(w, "\n", "")
-			w = LootFilter.normalizeNameFilterEntry(w)
-			if w ~= "" then
-				table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"], w)
-			end
+	for w in string.gmatch(result, "[^\n]+\n") do
+		w = string.gsub(w, "\n", "")
+		w = LootFilter.normalizeNameFilterEntry(w)
+		if w ~= "" then
+			table.insert(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"], w)
 		end
 	end
 end
@@ -1341,13 +1337,11 @@ function LootFilter.setNamesDelete()
 	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"] = {}
 	local result = LootFilterEditBox2:GetText() .. "\n"
-	if result ~= nil then
-		for w in string.gmatch(result, "[^\n]+\n") do
-			w = string.gsub(w, "\n", "")
-			w = LootFilter.normalizeNameFilterEntry(w)
-			if w ~= "" then
-				table.insert(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"], w)
-			end
+	for w in string.gmatch(result, "[^\n]+\n") do
+		w = string.gsub(w, "\n", "")
+		w = LootFilter.normalizeNameFilterEntry(w)
+		if w ~= "" then
+			table.insert(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"], w)
 		end
 	end
 end
@@ -1359,63 +1353,6 @@ function LootFilter.showTooltip(area, text)
 		GameTooltip:SetText(LootFilter.Locale.LocTooltip[text], 1, 1, 1, 0.75, 1)
 		GameTooltip:Show()
 	end
-end
-
-function LootFilter.setRadioButtonsValue(button)
-	local name = LootFilter.trim(button:GetParent():GetName())
-	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
-	if LootFilterVars[LootFilter.REALMPLAYER].keepList[name] ~= nil then
-		LootFilterVars[LootFilter.REALMPLAYER].keepList[name] = nil
-	end
-	if LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] ~= nil then
-		LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] = nil
-	end
-
-	local children = { this:GetParent():GetChildren() }
-	local i = 0
-	for _, child in ipairs(children) do
-		if child ~= button then
-			child:SetChecked(false)
-		else
-			button:SetChecked(true)
-			if i == 1 then
-				if string.match(name, "^QU") then
-					LootFilterVars[LootFilter.REALMPLAYER].keepList[name] = LootFilter.Locale.qualities[name]
-				elseif string.match(name, "^TY") then
-					LootFilterVars[LootFilter.REALMPLAYER].keepList[name] = LootFilter.Locale.radioButtonsText[name]
-				else
-					LootFilterVars[LootFilter.REALMPLAYER].keepList[name] = true
-				end
-			elseif i == 2 then
-				if string.match(name, "^QU") then
-					LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] = LootFilter.Locale.qualities[name]
-				elseif string.match(name, "^TY") then
-					LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] = LootFilter.Locale.radioButtonsText[name]
-				else
-					LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] = true
-				end
-			end
-		end
-		i = i + 1
-	end
-end
-
-function LootFilter.getRadioButtonsValue(button)
-	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
-	local name = LootFilter.trim(button:GetName())
-	local fontString = getglobal(button:GetName() .. "_Text")
-	local radioButton = getglobal(button:GetName() .. "_Default")
-
-	getglobal(button:GetName() .. "_Default"):SetChecked(false)
-	getglobal(button:GetName() .. "_Keep"):SetChecked(false)
-	getglobal(button:GetName() .. "_Delete"):SetChecked(false)
-	fontString:SetText(LootFilter.Locale.radioButtonsText[name])
-	if LootFilterVars[LootFilter.REALMPLAYER].keepList[name] ~= nil then
-		radioButton = getglobal(button:GetName() .. "_Keep")
-	elseif LootFilterVars[LootFilter.REALMPLAYER].deleteList[name] ~= nil then
-		radioButton = getglobal(button:GetName() .. "_Delete")
-	end
-	radioButton:SetChecked(true)
 end
 
 function LootFilter.setRadioButtonValue(button)
@@ -1649,36 +1586,6 @@ function LootFilter.SelectDropDown_Initialize()
 	end
 end
 
-function LootFilter.SelectDropDownType_OnClick()
-	UIDropDownMenu_SetSelectedValue(this.owner, this.value)
-	LootFilter.hideTypeTabs()
-	local f = getglobal("LootFilterDKDType" .. UIDropDownMenu_GetText(LootFilterSelectDropDownType))
-	if f then f:Show() end
-end
-
-function LootFilter.SelectDropDownType_Initialize()
-	local i = 1
-	for key, value in LootFilter.sortedPairs(LootFilter.Locale.types) do
-		local info = UIDropDownMenu_CreateInfo()
-		info.text = value
-		info.value = i
-		info.func = LootFilter.SelectDropDownType_OnClick
-		info.owner = this:GetParent()
-		info.checked = nil
-		info.icon = nil
-		UIDropDownMenu_AddButton(info, level)
-
-		if UIDropDownMenu_GetSelectedValue(LootFilterSelectDropDownType) == nil then
-			UIDropDownMenu_SetSelectedID(LootFilterSelectDropDownType, i)
-			UIDropDownMenu_SetSelectedValue(LootFilterSelectDropDownType, i)
-			UIDropDownMenu_SetText(LootFilterSelectDropDownType, value)
-			local f = getglobal("LootFilterDKDType" .. value)
-			if f ~= nil then f:Show() end
-		end
-		i = i + 1
-	end
-end
-
 function LootFilter.SelectDropDownCalculate_OnClick()
 	UIDropDownMenu_SetSelectedValue(this.owner, this.value)
 	LootFilterVars[LootFilter.REALMPLAYER].calculate = this.value
@@ -1730,13 +1637,6 @@ function LootFilter.checkDependencies()
 			LootFilterOPMarketValue:Show()
 			LootFilter.marketValue = true
 		end
-	end
-end
-
-function LootFilter.hideTypeTabs()
-	for key, typeName in pairs(LootFilter.Locale.types) do
-		local f = getglobal("LootFilterDKDType" .. typeName)
-		if f then f:Hide() end
 	end
 end
 
