@@ -609,7 +609,7 @@ local function createNamesPage(parent)
 	patternHelp:SetPoint("TOPLEFT", patternHeader, "BOTTOMLEFT", 0, -2)
 	patternHelp:SetWidth(550)
 	patternHelp:SetJustifyH("LEFT")
-	patternHelp:SetText("|cffffffffExact:|r Hearthstone   |cffffffff*:|r *Beast*   |cffffffff#:|r #pattern   |cffffffff##:|r ##tooltip   |cffffffffComment:|r name ; note|r")
+	patternHelp:SetText("|cffffffffExact:|r Hearthstone   |cffffffffWildcard:|r *Beast*   |cffffffffPattern:|r #Beast   |cffffffffTooltip:|r ##Soulbound   |cffffffffComment:|r name ; note")
 	patternHelp:SetTextColor(1, 1, 1)
 
 	return page
