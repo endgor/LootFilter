@@ -202,6 +202,7 @@ local typeRows = {}
 local typeScrollChild
 local expandedTypes = {}
 local typeSearchText = ""
+local showModifiedOnly = false
 
 local function updateTypeRowVisual(row)
 	local state = getTriState(row.typeKey)
@@ -226,25 +227,21 @@ end
 
 local function updateHeaderStateLabel(headerRow)
 	local subtypes = getSubtypeRows(headerRow.typeName)
-	if #subtypes == 0 then return end
-	local first = getTriState(subtypes[1].typeKey)
-	local allSame = true
-	for i = 2, #subtypes do
-		if getTriState(subtypes[i].typeKey) ~= first then
-			allSame = false
-			break
+	local total = #subtypes
+	if total == 0 then
+		headerRow.stateLabel:SetText("")
+		return
+	end
+	local active = 0
+	for _, sub in ipairs(subtypes) do
+		if getTriState(sub.typeKey) ~= "neutral" then
+			active = active + 1
 		end
 	end
-	if allSame then
-		if first == "keep" then
-			headerRow.stateLabel:SetText("|cff33ff33KEEP|r")
-		elseif first == "delete" then
-			headerRow.stateLabel:SetText("|cffff3333DEL|r")
-		else
-			headerRow.stateLabel:SetText("|cff888888--|r")
-		end
+	if active == 0 then
+		headerRow.stateLabel:SetText("|cff888888(0/" .. total .. ")|r")
 	else
-		headerRow.stateLabel:SetText("|cffbbbbbbmixed|r")
+		headerRow.stateLabel:SetText("|cffffd100(" .. active .. "/" .. total .. ")|r")
 	end
 end
 
@@ -269,6 +266,16 @@ local function layoutTypeRows()
 		end
 	end
 
+	-- When "Modified" filter is active, find categories with non-neutral subtypes
+	local modifiedParents = {}
+	if showModifiedOnly then
+		for _, row in ipairs(typeRows) do
+			if row.isSubtype and getTriState(row.typeKey) ~= "neutral" then
+				modifiedParents[row.parentType] = true
+			end
+		end
+	end
+
 	local y = 0
 	for _, row in ipairs(typeRows) do
 		if row.isSubtype then
@@ -278,6 +285,9 @@ local function layoutTypeRows()
 				visible = matchingParents[row.parentType] ~= nil
 			else
 				visible = expandedTypes[row.parentType] ~= nil
+			end
+			if visible and showModifiedOnly then
+				visible = modifiedParents[row.parentType] ~= nil
 			end
 			if visible then
 				row:ClearAllPoints()
@@ -291,6 +301,9 @@ local function layoutTypeRows()
 			local visible = true
 			if searching then
 				visible = matchingParents[row.typeName] ~= nil
+			end
+			if visible and showModifiedOnly then
+				visible = modifiedParents[row.typeName] ~= nil
 			end
 			if visible then
 				row:ClearAllPoints()
@@ -556,6 +569,22 @@ local function createFiltersPage(parent)
 	searchBox:SetScript("OnEscapePressed", function()
 		searchBox:SetText("")
 		searchBox:ClearFocus()
+	end)
+
+	-- "Modified" toggle button next to search box
+	local modBtn = CreateFrame("Button", nil, page, "GameMenuButtonTemplate")
+	modBtn:SetWidth(80)
+	modBtn:SetHeight(22)
+	modBtn:SetPoint("LEFT", searchBG, "RIGHT", 6, 0)
+	modBtn:SetText("Modified")
+	modBtn:SetScript("OnClick", function()
+		showModifiedOnly = not showModifiedOnly
+		if showModifiedOnly then
+			modBtn:LockHighlight()
+		else
+			modBtn:UnlockHighlight()
+		end
+		layoutTypeRows()
 	end)
 
 	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 206)
