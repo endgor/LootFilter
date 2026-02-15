@@ -157,7 +157,7 @@ LootFilter.Locale = {
 		
 		["OPEnable"]= "Enable Loot Filter",
 		["OPLootBot"]= "Enable Scavenger Loot Filter",
-		["OPCaching"]= "Enable Loot Caching",
+		["OPCaching"]= "Maintain free bag slots (auto-removes cheapest items)",
 		["OPTooltips"]= "Show tooltips",
 		["OPNotifyDelete"]= "Notify on delete",
 		["OPNotifyKeep"]= "Notify on keep",

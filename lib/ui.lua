@@ -2,17 +2,17 @@
 -- ui.lua  -  Loot Filter UI (sidebar navigation, programmatic layout)
 -- ---------------------------------------------------------------------------
 
--- WoW 3.3.5a quality colours
+-- WoW 3.3.5a quality colours (from GetItemQualityColor)
 local QUALITY_COLORS = {
-	[0]  = { r = 0.62, g = 0.62, b = 0.62 }, -- Poor (Grey)
-	[1]  = { r = 1.00, g = 1.00, b = 1.00 }, -- Common (White)
-	[2]  = { r = 0.12, g = 1.00, b = 0.00 }, -- Uncommon (Green)
-	[3]  = { r = 0.00, g = 0.44, b = 0.87 }, -- Rare (Blue)
-	[4]  = { r = 0.64, g = 0.21, b = 0.93 }, -- Epic (Purple)
-	[5]  = { r = 1.00, g = 0.50, b = 0.00 }, -- Legendary (Orange)
-	[6]  = { r = 0.90, g = 0.80, b = 0.50 }, -- Artifact (Red)
-	[7]  = { r = 0.00, g = 0.80, b = 1.00 }, -- Heirloom (Cyan)
-	[-1] = { r = 1.00, g = 1.00, b = 0.00 }, -- Quest (Yellow)
+	[0]  = { r = 0.62, g = 0.62, b = 0.62 }, -- Poor
+	[1]  = { r = 1.00, g = 1.00, b = 1.00 }, -- Common
+	[2]  = { r = 0.12, g = 1.00, b = 0.00 }, -- Uncommon
+	[3]  = { r = 0.00, g = 0.44, b = 0.87 }, -- Rare
+	[4]  = { r = 0.64, g = 0.21, b = 0.93 }, -- Epic
+	[5]  = { r = 1.00, g = 0.50, b = 0.00 }, -- Legendary
+	[6]  = { r = 0.90, g = 0.80, b = 0.50 }, -- Artifact
+	[7]  = { r = 0.00, g = 0.80, b = 1.00 }, -- Heirloom
+	[-1] = { r = 1.00, g = 1.00, b = 0.00 }, -- Quest
 }
 
 local QUALITY_ORDER = {
@@ -149,7 +149,7 @@ end
 
 local function createQualityChip(parent, qi, x, y)
 	local chip = CreateFrame("Frame", "LootFilterQChip" .. qi.key, parent)
-	chip:SetWidth(60)
+	chip:SetWidth(76)
 	chip:SetHeight(42)
 	chip:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
 	chip:EnableMouse(true)
@@ -166,7 +166,7 @@ local function createQualityChip(parent, qi, x, y)
 
 	local nameText = chip:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	nameText:SetPoint("TOP", chip, "TOP", 0, -5)
-	nameText:SetText(qi.short)
+	nameText:SetText(qi.name)
 	nameText:SetTextColor(c.r, c.g, c.b)
 
 	local stateText = chip:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -201,6 +201,7 @@ end
 local typeRows = {}
 local typeScrollChild
 local expandedTypes = {}
+local typeSearchText = ""
 
 local function updateTypeRowVisual(row)
 	local state = getTriState(row.typeKey)
@@ -214,10 +215,37 @@ local function updateTypeRowVisual(row)
 end
 
 local function layoutTypeRows()
+	local searching = typeSearchText ~= ""
+	local searchLower = searching and string.lower(typeSearchText) or ""
+
+	-- When searching, find which parent types have matching subtypes
+	local matchingParents = {}
+	if searching then
+		for _, row in ipairs(typeRows) do
+			if row.isSubtype then
+				if string.find(string.lower(row.displayName), searchLower, 1, true) then
+					matchingParents[row.parentType] = true
+				end
+			else
+				-- Also match on category name itself (shows all its subtypes)
+				if string.find(string.lower(row.displayName), searchLower, 1, true) then
+					matchingParents[row.typeName] = true
+				end
+			end
+		end
+	end
+
 	local y = 0
 	for _, row in ipairs(typeRows) do
 		if row.isSubtype then
-			if expandedTypes[row.parentType] then
+			local visible = false
+			if searching then
+				-- Show if subtype name matches OR parent category name matched
+				visible = matchingParents[row.parentType] ~= nil
+			else
+				visible = expandedTypes[row.parentType] ~= nil
+			end
+			if visible then
 				row:ClearAllPoints()
 				row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 24, -y)
 				row:Show()
@@ -226,10 +254,19 @@ local function layoutTypeRows()
 				row:Hide()
 			end
 		else
-			row:ClearAllPoints()
-			row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 0, -y)
-			row:Show()
-			y = y + 20
+			local visible = true
+			if searching then
+				visible = matchingParents[row.typeName] ~= nil
+			end
+			if visible then
+				row:ClearAllPoints()
+				row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 0, -y)
+				row.arrow:SetText(searching and "v" or (expandedTypes[row.typeName] and "v" or ">"))
+				row:Show()
+				y = y + 20
+			else
+				row:Hide()
+			end
 		end
 	end
 	typeScrollChild:SetHeight(math.max(y, 1))
@@ -242,6 +279,7 @@ local function createTypeHeaderRow(parent, typeName, displayName)
 	row:EnableMouse(true)
 	row.isSubtype = false
 	row.typeName = typeName
+	row.displayName = displayName
 
 	local arrow = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	arrow:SetPoint("LEFT", row, "LEFT", 2, 0)
@@ -275,6 +313,7 @@ local function createTypeSubRow(parent, key, displayName, parentTypeName)
 	row.isSubtype = true
 	row.parentType = parentTypeName
 	row.typeKey = key
+	row.displayName = displayName
 
 	-- Hidden DKD frame so backend matching code can find it by name
 	local hidden = CreateFrame("Frame", "LootFilter" .. key, parent, "LootFilterDKDOptionsTemplate")
@@ -386,18 +425,57 @@ local function createFiltersPage(parent)
 	for i, qi in ipairs(QUALITY_ORDER) do
 		local col = (i - 1) % 5
 		local row = math.floor((i - 1) / 5)
-		createQualityChip(page, qi, 10 + col * 66, chipStartY - row * 48)
+		createQualityChip(page, qi, 10 + col * 82, chipStartY - row * 48)
 	end
 
 	local tHeader = createSectionHeader(page, "Item Types", 10, -148)
 
 	local helpText2 = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText2:SetPoint("TOPLEFT", tHeader, "BOTTOMLEFT", 0, -4)
-	helpText2:SetText("Click type to expand. Click subtype to cycle state.")
+	helpText2:SetText("Click category to expand. Click subtype to cycle state.")
 	helpText2:SetTextColor(0.6, 0.6, 0.6)
 
-	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 230)
-	typePanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -184)
+	-- Search box
+	local searchBG = createPanel(page, nil, 200, 22)
+	searchBG:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -182)
+
+	local searchBox = CreateFrame("EditBox", "LootFilterTypeSearch", page)
+	searchBox:SetWidth(188)
+	searchBox:SetHeight(18)
+	searchBox:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -184)
+	searchBox:SetAutoFocus(false)
+	searchBox:SetFontObject(ChatFontNormal)
+
+	local searchPlaceholder = searchBox:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	searchPlaceholder:SetPoint("LEFT", searchBox, "LEFT", 2, 0)
+	searchPlaceholder:SetText("Search types...")
+	searchPlaceholder:SetTextColor(0.4, 0.4, 0.4)
+
+	searchBox:SetScript("OnTextChanged", function()
+		local text = searchBox:GetText()
+		if text == "" then
+			searchPlaceholder:Show()
+		else
+			searchPlaceholder:Hide()
+		end
+		typeSearchText = text
+		layoutTypeRows()
+	end)
+	searchBox:SetScript("OnEditFocusGained", function()
+		searchPlaceholder:Hide()
+	end)
+	searchBox:SetScript("OnEditFocusLost", function()
+		if searchBox:GetText() == "" then
+			searchPlaceholder:Show()
+		end
+	end)
+	searchBox:SetScript("OnEscapePressed", function()
+		searchBox:SetText("")
+		searchBox:ClearFocus()
+	end)
+
+	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 206)
+	typePanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -208)
 
 	local typeScroll = CreateFrame("ScrollFrame", "LootFilterTypeScroll", typePanel, "UIPanelScrollFrameTemplate")
 	typeScroll:SetPoint("TOPLEFT", typePanel, "TOPLEFT", 6, -6)
@@ -457,7 +535,12 @@ local function createNamesPage(parent)
 	keepEdit:SetAutoFocus(false)
 	keepEdit:SetMaxLetters(7500)
 	keepEdit:SetFontObject(ChatFontNormal)
-	keepEdit:SetScript("OnShow", function() LootFilter.getNames() end)
+	keepEdit:SetScript("OnShow", function()
+		LootFilter.getNames()
+		keepEdit.max = nil
+		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
+		if scrollBar then scrollBar:SetValue(0) end
+	end)
 	keepEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
 		keepScroll:UpdateScrollChildRect()
@@ -501,7 +584,12 @@ local function createNamesPage(parent)
 	delEdit:SetAutoFocus(false)
 	delEdit:SetMaxLetters(7500)
 	delEdit:SetFontObject(ChatFontNormal)
-	delEdit:SetScript("OnShow", function() LootFilter.getNamesDelete() end)
+	delEdit:SetScript("OnShow", function()
+		LootFilter.getNamesDelete()
+		delEdit.max = nil
+		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
+		if scrollBar then scrollBar:SetValue(0) end
+	end)
 	delEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
 		delScroll:UpdateScrollChildRect()
@@ -593,42 +681,39 @@ local function createValuesPage(parent)
 	delVal:SetScript("OnEnter", function() LootFilter.showTooltip(delVal, "LToolTip7") end)
 	delVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	-- Keep threshold
+	-- Hidden keep-threshold elements (backend still reads these values)
 	local keepValOpt = createCheckOption(page, "LootFilterOPValKeep", 10, -96)
 	keepValOpt:Hide()
-
 	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -96, 40)
 	keepVal:Hide()
 	keepValBG:Hide()
 	LootFilterTextBackground4 = keepValBG
-	keepVal:SetScript("OnEnter", function() LootFilter.showTooltip(keepVal, "LToolTip8") end)
-	keepVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	-- No-value option
-	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -124)
+	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -96)
 	noValOpt:Hide()
 
 	-- Calculate method
 	local calcLabel = page:CreateFontString("LootFilterSizeToCalculate", "OVERLAY", "GameFontNormal")
-	calcLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -154)
+	calcLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -126)
 	calcLabel:SetText(LFINT_TXT_SIZETOCALCULATE)
 	calcLabel:Hide()
 
 	local calcDrop = CreateFrame("Button", "LootFilterSelectDropDownCalculate", page, "UIDropDownMenuTemplate")
-	calcDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 190, -148)
+	calcDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 190, -120)
 	calcDrop:Hide()
 
 	-- Market value
-	local marketOpt = createCheckOption(page, "LootFilterOPMarketValue", 10, -180)
+	local marketOpt = createCheckOption(page, "LootFilterOPMarketValue", 10, -152)
 	marketOpt:Hide()
 
 	-- Session statistics
-	createSectionHeader(page, "Session Statistics", 10, -210)
+	createSectionHeader(page, "Session Statistics", 10, -182)
 
 	local resetBtn = CreateFrame("Button", "LootFilterButtonReset", page, "GameMenuButtonTemplate")
 	resetBtn:SetWidth(70)
 	resetBtn:SetHeight(20)
-	resetBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 180, -210)
+	resetBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 180, -182)
 	resetBtn:SetText(LFINT_BTN_RESET or "Reset")
 	resetBtn:SetScript("OnClick", function()
 		LootFilter.sessionReset()
@@ -636,7 +721,7 @@ local function createValuesPage(parent)
 	end)
 	resetBtn:Hide()
 
-	local infoY = -234
+	local infoY = -206
 	local si = page:CreateFontString("LootFilterTextSessionValueInfo", "OVERLAY", "GameFontNormal")
 	si:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY)
 	local sit = page:CreateFontString("LootFilterTextSessionItemTotal", "OVERLAY", "GameFontNormal")
@@ -1382,12 +1467,9 @@ function LootFilter.checkDependencies()
 			if LootFilterTextBackground5 then LootFilterTextBackground5:Show() end
 			LootFilterFreeSlotsText:Show()
 		end
-		LootFilterOPValKeep:Show()
 		LootFilterOPValDelete:Show()
 		LootFilterEditBox3:Show()
-		LootFilterEditBox4:Show()
 		if LootFilterTextBackground3 then LootFilterTextBackground3:Show() end
-		if LootFilterTextBackground4 then LootFilterTextBackground4:Show() end
 		LootFilterOPNoValue:Show()
 		LootFilterSelectDropDownCalculate:Show()
 		LootFilterSizeToCalculate:Show()
