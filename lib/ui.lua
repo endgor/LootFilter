@@ -536,14 +536,15 @@ local function createNamesPage(parent)
 	keepEdit:SetMaxLetters(7500)
 	keepEdit:SetFontObject(ChatFontNormal)
 	keepEdit:SetScript("OnShow", function()
+		keepEdit.loading = true
 		LootFilter.getNames()
+		keepEdit.loading = false
 		keepEdit.max = nil
-		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
-		if scrollBar then scrollBar:SetValue(0) end
 	end)
 	keepEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
 		keepScroll:UpdateScrollChildRect()
+		if keepEdit.loading then return end
 		local mn, mx = scrollBar:GetMinMaxValues()
 		if mx > 0 and (keepEdit.max ~= mx) then
 			keepEdit.max = mx
@@ -585,14 +586,15 @@ local function createNamesPage(parent)
 	delEdit:SetMaxLetters(7500)
 	delEdit:SetFontObject(ChatFontNormal)
 	delEdit:SetScript("OnShow", function()
+		delEdit.loading = true
 		LootFilter.getNamesDelete()
+		delEdit.loading = false
 		delEdit.max = nil
-		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
-		if scrollBar then scrollBar:SetValue(0) end
 	end)
 	delEdit:SetScript("OnTextChanged", function()
 		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
 		delScroll:UpdateScrollChildRect()
+		if delEdit.loading then return end
 		local mn, mx = scrollBar:GetMinMaxValues()
 		if mx > 0 and (delEdit.max ~= mx) then
 			delEdit.max = mx
@@ -661,20 +663,20 @@ local function createValuesPage(parent)
 	cachingOpt:Hide()
 
 	local freeSlotsLabel = page:CreateFontString("LootFilterFreeSlotsText", "OVERLAY", "GameFontNormal")
-	freeSlotsLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 250, -36)
+	freeSlotsLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 30, -54)
 	freeSlotsLabel:SetText(LFINT_TXT_NUMFREEBAGSLOTS)
 	freeSlotsLabel:Hide()
 
-	local freeSlots, freeSlotsBG = createValueEditBox(page, "LootFilterEditBox5", 450, -36, 40)
+	local freeSlots, freeSlotsBG = createValueEditBox(page, "LootFilterEditBox5", 220, -54, 40)
 	freeSlots:Hide()
 	freeSlotsBG:Hide()
 	LootFilterTextBackground5 = freeSlotsBG
 
 	-- Delete threshold
-	local delValOpt = createCheckOption(page, "LootFilterOPValDelete", 10, -68)
+	local delValOpt = createCheckOption(page, "LootFilterOPValDelete", 10, -78)
 	delValOpt:Hide()
 
-	local delVal, delValBG = createValueEditBox(page, "LootFilterEditBox3", 250, -68, 40)
+	local delVal, delValBG = createValueEditBox(page, "LootFilterEditBox3", 250, -78, 40)
 	delVal:Hide()
 	delValBG:Hide()
 	LootFilterTextBackground3 = delValBG
@@ -682,38 +684,38 @@ local function createValuesPage(parent)
 	delVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	-- Hidden keep-threshold elements (backend still reads these values)
-	local keepValOpt = createCheckOption(page, "LootFilterOPValKeep", 10, -96)
+	local keepValOpt = createCheckOption(page, "LootFilterOPValKeep", 10, -106)
 	keepValOpt:Hide()
-	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -96, 40)
+	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -106, 40)
 	keepVal:Hide()
 	keepValBG:Hide()
 	LootFilterTextBackground4 = keepValBG
 
 	-- No-value option
-	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -96)
+	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -106)
 	noValOpt:Hide()
 
 	-- Calculate method
 	local calcLabel = page:CreateFontString("LootFilterSizeToCalculate", "OVERLAY", "GameFontNormal")
-	calcLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -126)
+	calcLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -136)
 	calcLabel:SetText(LFINT_TXT_SIZETOCALCULATE)
 	calcLabel:Hide()
 
 	local calcDrop = CreateFrame("Button", "LootFilterSelectDropDownCalculate", page, "UIDropDownMenuTemplate")
-	calcDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 190, -120)
+	calcDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 190, -130)
 	calcDrop:Hide()
 
 	-- Market value
-	local marketOpt = createCheckOption(page, "LootFilterOPMarketValue", 10, -152)
+	local marketOpt = createCheckOption(page, "LootFilterOPMarketValue", 10, -162)
 	marketOpt:Hide()
 
 	-- Session statistics
-	createSectionHeader(page, "Session Statistics", 10, -182)
+	createSectionHeader(page, "Session Statistics", 10, -192)
 
 	local resetBtn = CreateFrame("Button", "LootFilterButtonReset", page, "GameMenuButtonTemplate")
 	resetBtn:SetWidth(70)
 	resetBtn:SetHeight(20)
-	resetBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 180, -182)
+	resetBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 180, -192)
 	resetBtn:SetText(LFINT_BTN_RESET or "Reset")
 	resetBtn:SetScript("OnClick", function()
 		LootFilter.sessionReset()
@@ -721,7 +723,7 @@ local function createValuesPage(parent)
 	end)
 	resetBtn:Hide()
 
-	local infoY = -206
+	local infoY = -216
 	local si = page:CreateFontString("LootFilterTextSessionValueInfo", "OVERLAY", "GameFontNormal")
 	si:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY)
 	local sit = page:CreateFontString("LootFilterTextSessionItemTotal", "OVERLAY", "GameFontNormal")
