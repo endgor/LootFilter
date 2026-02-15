@@ -511,11 +511,11 @@ local function createNamesPage(parent)
 
 	-- Keep column
 	local keepHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	keepHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 16, -36)
+	keepHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 16, -46)
 	keepHeader:SetText("|cff33ff33Items to KEEP|r")
 
-	local keepPanel = createPanel(page, "LootFilterNameKeepPanel", 265, 348)
-	keepPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -50)
+	local keepPanel = createPanel(page, "LootFilterNameKeepPanel", 265, 336)
+	keepPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -62)
 	keepPanel:SetBackdropBorderColor(0.2, 0.7, 0.2, 0.8)
 
 	local keepScroll = CreateFrame("ScrollFrame", "LootFilterScrollFrame1", keepPanel, "UIPanelScrollFrameTemplate")
@@ -556,11 +556,11 @@ local function createNamesPage(parent)
 
 	-- Delete column
 	local delHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	delHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 292, -36)
+	delHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 292, -46)
 	delHeader:SetText("|cffff3333Items to DELETE|r")
 
-	local delPanel = createPanel(page, "LootFilterNameDelPanel", 265, 348)
-	delPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 286, -50)
+	local delPanel = createPanel(page, "LootFilterNameDelPanel", 265, 336)
+	delPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 286, -62)
 	delPanel:SetBackdropBorderColor(0.7, 0.2, 0.2, 0.8)
 
 	local delScroll = CreateFrame("ScrollFrame", "LootFilterScrollFrame2", delPanel, "UIPanelScrollFrameTemplate")
