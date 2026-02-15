@@ -222,7 +222,8 @@ LootFilter.Locale = {
         ["LToolTip9"] = "Enter the number of free bag slots you want to keep. Loot Filter will start replacing lower valued items with higher ones if the number of free slots is less than what you enter here.",
         ["LToolTip10"] = "Any items listed here do not match any of the keep properties. You can choose to automatically sell or delete these items. Use shift-mouseclick to add an item to the keep list.",
         ["LToolTip11"] = "Items that match a name listed here are automatically opened. Using this on scrolls and such will not work, and generate an error.\n\nEnter one name per line. Matching is case-insensitive.\n\nExact match:   Thick-shelled Clam\nWildcard (*):   *Clam*  (contains 'Clam')\n                       *Clam    (ends with 'Clam')\nPartial (#):     #Clam   (contains 'Clam')\nComments:      *Clam* ; open all clams",
-		["LToolTip12"] = "Select how you want to calculate the value of items (value * number_of_items). Number_of_items can be a single item, the current stack size or the maximum stack size."
+		["LToolTip12"] = "Select how you want to calculate the value of items (value * number_of_items). Number_of_items can be a single item, the current stack size or the maximum stack size.",
+		["LToolTip13"] = "Click to cycle through states:\n\n|cff888888--|r  Neutral: no action for this property\n|cff33ff33KEEP|r: matching items are kept\n|cffff3333DELETE|r: matching items are deleted"
     },
 };
 

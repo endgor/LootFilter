@@ -406,7 +406,6 @@ function LootFilter.OnEvent()
 
 			LootFilter.takeBagSnapshot();
 
-			LootFilterButtonGeneral:LockHighlight();
 			LootFilter.setTitle();
 			LootFilter.getNames();
 			LootFilter.getNamesDelete();
@@ -420,6 +419,8 @@ function LootFilter.OnEvent()
 			UIDropDownMenu_Initialize(LootFilterSelectDropDownType, LootFilter.SelectDropDownType_Initialize);
 			UIDropDownMenu_Initialize(LootFilterSelectDropDownCalculate, LootFilter.SelectDropDownCalculate_Initialize);
 			LootFilter.SelectDropDown_Initialize();
+
+			LootFilter.navigateTo("Filters");
 
 
 			-- The following was added because GetSellValue is not always available when addons load
