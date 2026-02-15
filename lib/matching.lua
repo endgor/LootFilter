@@ -53,28 +53,123 @@ function LootFilter.matchProperties(key, value, item, keep)
 	return reason;
 end;
 
-function LootFilter.matchKeepProperties(item)
-	local reason = "";
-
+function LootFilter.matchQuality(item)
 	for key, value in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList) do
-		reason = LootFilter.matchProperties(key, value, item, true);
-		if (reason ~= "") then
-			return reason;
-		end;
-	end;
-	return reason;
-end;
-
-function LootFilter.matchDeleteProperties(item)
-	local reason = "";
+		if string.match(key, "^QU") then
+			local reason = LootFilter.matchProperties(key, value, item, true);
+			if reason ~= "" then
+				return "keep", reason;
+			end
+		end
+	end
 	for key, value in pairs(LootFilterVars[LootFilter.REALMPLAYER].deleteList) do
-		reason = LootFilter.matchProperties(key, value, item, false);
-		if (reason ~= "") then
-			return reason;
-		end;
-	end;
-	return reason;
-end;
+		if string.match(key, "^QU") then
+			local reason = LootFilter.matchProperties(key, value, item, false);
+			if reason ~= "" then
+				return "delete", reason;
+			end
+		end
+	end
+	return nil, nil;
+end
+
+function LootFilter.matchType(item)
+	for key, value in pairs(LootFilterVars[LootFilter.REALMPLAYER].keepList) do
+		if string.match(key, "^TY") then
+			local reason = LootFilter.matchProperties(key, value, item, true);
+			if reason ~= "" then
+				return "keep", reason;
+			end
+		end
+	end
+	for key, value in pairs(LootFilterVars[LootFilter.REALMPLAYER].deleteList) do
+		if string.match(key, "^TY") then
+			local reason = LootFilter.matchProperties(key, value, item, false);
+			if reason ~= "" then
+				return "delete", reason;
+			end
+		end
+	end
+	return nil, nil;
+end
+
+function LootFilter.matchValue(item)
+	if not GetSellValue then
+		return nil, nil;
+	end
+	if not LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAOn"] then
+		return nil, nil;
+	end
+	-- Handle no-value items
+	if LootFilterVars[LootFilter.REALMPLAYER].novalue and (item["value"] == nil or item["value"] <= 0) then
+		return "keep", LootFilter.Locale.LocText["LTNoKnownValue"];
+	end
+	local calculatedValue;
+	local itemValue = tonumber(item["value"]) or 0;
+	if itemValue <= 0 then
+		calculatedValue = 0;
+	elseif LootFilterVars[LootFilter.REALMPLAYER].calculate == 1 then
+		calculatedValue = itemValue;
+	elseif LootFilterVars[LootFilter.REALMPLAYER].calculate == 2 then
+		calculatedValue = itemValue * (tonumber(item["amount"]) or 1);
+	else
+		calculatedValue = itemValue * (tonumber(item["stack"]) or 1);
+	end
+	local threshold = tonumber(LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"]) * 10000;
+	if calculatedValue < threshold then
+		return "delete", LootFilter.Locale.LocText["LTValueNotHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
+	else
+		return "keep", LootFilter.Locale.LocText["LTValueHighEnough"] .. " (" .. calculatedValue / 10000 .. ")";
+	end
+end
+
+-- Evaluate an item against all filter rules using a sequential override chain.
+-- Each step can override the previous decision.
+--
+-- Priority chain:
+--   1. Names    (highest - explicit name always wins)
+--   2. Quality  (keep/delete by rarity)
+--   3. Type     (overrides quality)
+--   4. Value    (final override)
+--
+-- Returns: action ("keep", "delete", or nil), reason string
+function LootFilter.evaluateItem(item)
+	_, _, item["rarity"], _, _, item["type"], item["subType"], _ = GetItemInfo(item["id"]);
+
+	-- Step 1: Names (highest priority)
+	local reason = LootFilter.matchKeepNames(item);
+	if reason ~= "" then
+		return "keep", reason;
+	end
+	reason = LootFilter.matchDeleteNames(item);
+	if reason ~= "" then
+		return "delete", reason;
+	end
+
+	-- Steps 2-4: Quality -> Type -> Value (each overrides the previous)
+	local action = nil;
+	local lastReason = nil;
+
+	local qualAction, qualReason = LootFilter.matchQuality(item);
+	if qualAction then
+		action = qualAction;
+		lastReason = qualReason;
+	end
+
+	local typeAction, typeReason = LootFilter.matchType(item);
+	if typeAction then
+		action = typeAction;
+		lastReason = typeReason;
+	end
+
+	local valAction, valReason = LootFilter.matchValue(item);
+	if valAction then
+		action = valAction;
+		lastReason = valReason;
+	end
+
+	return action, lastReason;
+end
 
 function LootFilter.matchKeepNames(item)
 	local reason = "";
