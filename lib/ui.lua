@@ -202,7 +202,7 @@ local typeRows = {}
 local typeScrollChild
 local expandedTypes = {}
 local typeSearchText = ""
-local showModifiedOnly = false
+local typeFilterMode = "all"  -- "all", "keep", "delete", "mixed"
 
 local function updateTypeRowVisual(row)
 	local state = getTriState(row.typeKey)
@@ -225,24 +225,36 @@ local function getSubtypeRows(typeName)
 	return rows
 end
 
-local function updateHeaderStateLabel(headerRow)
+local function getHeaderCounts(headerRow)
 	local subtypes = getSubtypeRows(headerRow.typeName)
 	local total = #subtypes
+	local keeps, deletes = 0, 0
+	for _, sub in ipairs(subtypes) do
+		local st = getTriState(sub.typeKey)
+		if st == "keep" then keeps = keeps + 1
+		elseif st == "delete" then deletes = deletes + 1 end
+	end
+	return total, keeps, deletes
+end
+
+local function updateHeaderStateLabel(headerRow)
+	local total, keeps, deletes = getHeaderCounts(headerRow)
 	if total == 0 then
 		headerRow.stateLabel:SetText("")
 		return
 	end
-	local active = 0
-	for _, sub in ipairs(subtypes) do
-		if getTriState(sub.typeKey) ~= "neutral" then
-			active = active + 1
-		end
-	end
+	local active = keeps + deletes
+	local color
 	if active == 0 then
-		headerRow.stateLabel:SetText("|cff888888(0/" .. total .. ")|r")
+		color = "ff888888"      -- grey: nothing set
+	elseif deletes == 0 then
+		color = "ff33ff33"      -- green: all active are KEEP
+	elseif keeps == 0 then
+		color = "ffff3333"      -- red: all active are DELETE
 	else
-		headerRow.stateLabel:SetText("|cffffd100(" .. active .. "/" .. total .. ")|r")
+		color = "ffffd100"      -- gold: mix of keep and delete
 	end
+	headerRow.stateLabel:SetText("|c" .. color .. "(" .. active .. "/" .. total .. ")|r")
 end
 
 local function layoutTypeRows()
@@ -266,12 +278,30 @@ local function layoutTypeRows()
 		end
 	end
 
-	-- When "Modified" filter is active, find categories with non-neutral subtypes
-	local modifiedParents = {}
-	if showModifiedOnly then
+	-- When filter mode is active, determine which categories pass
+	local filtering = typeFilterMode ~= "all"
+	local filterPassParents = {}
+	if filtering then
+		-- Build per-parent counts
+		local parentCounts = {}
 		for _, row in ipairs(typeRows) do
-			if row.isSubtype and getTriState(row.typeKey) ~= "neutral" then
-				modifiedParents[row.parentType] = true
+			if row.isSubtype then
+				local pn = row.parentType
+				if not parentCounts[pn] then parentCounts[pn] = { keeps = 0, deletes = 0, total = 0 } end
+				parentCounts[pn].total = parentCounts[pn].total + 1
+				local st = getTriState(row.typeKey)
+				if st == "keep" then parentCounts[pn].keeps = parentCounts[pn].keeps + 1
+				elseif st == "delete" then parentCounts[pn].deletes = parentCounts[pn].deletes + 1 end
+			end
+		end
+		for pn, c in pairs(parentCounts) do
+			local active = c.keeps + c.deletes
+			if typeFilterMode == "keep" then
+				if active > 0 and c.deletes == 0 then filterPassParents[pn] = true end
+			elseif typeFilterMode == "delete" then
+				if active > 0 and c.keeps == 0 then filterPassParents[pn] = true end
+			elseif typeFilterMode == "mixed" then
+				if c.keeps > 0 and c.deletes > 0 then filterPassParents[pn] = true end
 			end
 		end
 	end
@@ -286,8 +316,8 @@ local function layoutTypeRows()
 			else
 				visible = expandedTypes[row.parentType] ~= nil
 			end
-			if visible and showModifiedOnly then
-				visible = modifiedParents[row.parentType] ~= nil
+			if visible and filtering then
+				visible = filterPassParents[row.parentType] ~= nil
 			end
 			if visible then
 				row:ClearAllPoints()
@@ -302,8 +332,8 @@ local function layoutTypeRows()
 			if searching then
 				visible = matchingParents[row.typeName] ~= nil
 			end
-			if visible and showModifiedOnly then
-				visible = modifiedParents[row.typeName] ~= nil
+			if visible and filtering then
+				visible = filterPassParents[row.typeName] ~= nil
 			end
 			if visible then
 				row:ClearAllPoints()
@@ -571,20 +601,73 @@ local function createFiltersPage(parent)
 		searchBox:ClearFocus()
 	end)
 
-	-- "Modified" toggle button next to search box
-	local modBtn = CreateFrame("Button", nil, page, "GameMenuButtonTemplate")
-	modBtn:SetWidth(80)
-	modBtn:SetHeight(22)
-	modBtn:SetPoint("LEFT", searchBG, "RIGHT", 6, 0)
-	modBtn:SetText("Modified")
-	modBtn:SetScript("OnClick", function()
-		showModifiedOnly = not showModifiedOnly
-		if showModifiedOnly then
-			modBtn:LockHighlight()
+	-- Filter dropdown button next to search box
+	local filterBtn = CreateFrame("Button", nil, page, "GameMenuButtonTemplate")
+	filterBtn:SetWidth(80)
+	filterBtn:SetHeight(22)
+	filterBtn:SetPoint("LEFT", searchBG, "RIGHT", 6, 0)
+	filterBtn:SetText("Filter")
+
+	local filterMenu = CreateFrame("Frame", nil, page)
+	filterMenu:SetWidth(80)
+	filterMenu:SetHeight(4 * 20 + 8)
+	filterMenu:SetBackdrop({
+		bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = true, tileSize = 16, edgeSize = 12,
+		insets = { left = 2, right = 2, top = 2, bottom = 2 },
+	})
+	filterMenu:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+	filterMenu:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+	filterMenu:SetPoint("TOP", filterBtn, "BOTTOM", 0, -2)
+	filterMenu:SetFrameStrata("DIALOG")
+	filterMenu:Hide()
+
+	local filterOptions = { "All", "Keep", "Delete", "Mixed" }
+	local filterModes   = { "all", "keep", "delete", "mixed" }
+	local filterColors  = {
+		{ r = 1, g = 1, b = 1 },
+		{ r = 0.2, g = 1, b = 0.2 },
+		{ r = 1, g = 0.2, b = 0.2 },
+		{ r = 1, g = 0.82, b = 0 },
+	}
+
+	for i, label in ipairs(filterOptions) do
+		local opt = CreateFrame("Button", nil, filterMenu)
+		opt:SetWidth(72)
+		opt:SetHeight(20)
+		opt:SetPoint("TOPLEFT", filterMenu, "TOPLEFT", 4, -(i - 1) * 20 - 4)
+
+		local optText = opt:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		optText:SetPoint("LEFT", opt, "LEFT", 4, 0)
+		optText:SetText(label)
+		local c = filterColors[i]
+		optText:SetTextColor(c.r, c.g, c.b)
+
+		local optHl = opt:CreateTexture(nil, "HIGHLIGHT")
+		optHl:SetAllPoints()
+		optHl:SetTexture(1, 1, 1, 0.1)
+
+		opt:SetScript("OnClick", function()
+			typeFilterMode = filterModes[i]
+			filterMenu:Hide()
+			if typeFilterMode == "all" then
+				filterBtn:SetText("Filter")
+				filterBtn:UnlockHighlight()
+			else
+				filterBtn:SetText(label)
+				filterBtn:LockHighlight()
+			end
+			layoutTypeRows()
+		end)
+	end
+
+	filterBtn:SetScript("OnClick", function()
+		if filterMenu:IsShown() then
+			filterMenu:Hide()
 		else
-			modBtn:UnlockHighlight()
+			filterMenu:Show()
 		end
-		layoutTypeRows()
 	end)
 
 	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 206)
