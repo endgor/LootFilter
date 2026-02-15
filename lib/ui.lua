@@ -1109,31 +1109,108 @@ local function createHelpPage(parent)
 	page:SetAllPoints()
 	page:Hide()
 
-	createSectionHeader(page, "How It Works", 10, -10)
+	local helpScroll = CreateFrame("ScrollFrame", "LootFilterHelpScroll", page, "UIPanelScrollFrameTemplate")
+	helpScroll:SetPoint("TOPLEFT", page, "TOPLEFT", 0, -4)
+	helpScroll:SetPoint("BOTTOMRIGHT", page, "BOTTOMRIGHT", -26, 4)
 
-	local body = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	body:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -32)
-	body:SetWidth(540)
-	body:SetJustifyH("LEFT")
-	body:SetSpacing(4)
-	body:SetText(
+	local helpChild = CreateFrame("Frame", "LootFilterHelpChild", helpScroll)
+	helpChild:SetWidth(540)
+	helpScroll:SetScrollChild(helpChild)
+
+	local yOff = 0
+
+	local function addHeader(text)
+		local h = createSectionHeader(helpChild, text, 10, yOff)
+		yOff = yOff - 22
+		return h
+	end
+
+	local function addBody(text)
+		local f = helpChild:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+		f:SetPoint("TOPLEFT", helpChild, "TOPLEFT", 14, yOff)
+		f:SetWidth(530)
+		f:SetJustifyH("LEFT")
+		f:SetSpacing(3)
+		f:SetText(text)
+		yOff = yOff - f:GetStringHeight() - 8
+		return f
+	end
+
+	-- Section: Filter Priority
+	addHeader("Filter Priority")
+	addBody(
 		"When you loot an item, Loot Filter checks your rules to decide\n" ..
-		"whether to keep or delete it. Rules are checked in this order:\n\n" ..
-		"|cffffd100 1.|r  Keep Names  |cff888888(Names tab)|r\n" ..
-		"|cffffd100 2.|r  Delete Names  |cff888888(Names tab)|r\n" ..
-		"|cffffd100 3.|r  Keep Properties  |cff888888(Filters + Values tabs)|r\n" ..
-		"|cffffd100 4.|r  Delete Properties  |cff888888(Filters + Values tabs)|r\n\n" ..
-		"The first rule that matches wins. If nothing matches, the\n" ..
-		"item is kept by default.\n\n" ..
-		"|cffffd100Good to know|r\n" ..
-		"|cffffffffNames always override properties.|r If an item is on your\n" ..
-		"keep-names list, no delete property can remove it.\n\n" ..
-		"Properties are quality (Grey, Green, Blue ...), item type\n" ..
-		"(Cloth, Potion, Herb ...) and vendor value. Each property\n" ..
-		"can be neutral (ignored), KEEP, or DELETE.\n\n" ..
-		"Quest items are automatically added to the keep list.\n\n" ..
-		"All settings are per-character."
+		"whether to keep or delete it.\n\n" ..
+		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  highest priority, always kept\n" ..
+		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted\n" ..
+		"|cffffd100 3.|r  |cffffffffQuality|r |cff888888>|r |cffffffffType|r |cff888888>|r |cffffffffValue|r  " ..
+		"|cff888888(Filters + Values tabs)|r\n" ..
+		"|cffffd100 4.|r  |cffffffffNo match|r  —  kept by default\n\n" ..
+		"|cffffffffName rules always win.|r A keep-name overrides any delete\n" ..
+		"property. A delete-name overrides any keep property.\n\n" ..
+		"For property filters (step 3), each is checked in order and\n" ..
+		"|cffffffffthe last matching rule wins.|r For example, if Quality is set\n" ..
+		"to keep but Value says delete, the item is deleted."
 	)
+
+	-- Section: Name Filters
+	addHeader("Name Filters")
+	addBody(
+		"The Names tab has two text boxes: one for items to |cff33ff33keep|r,\n" ..
+		"one for items to |cffff3333delete|r. Enter one pattern per line.\n\n" ..
+		"|cffffd100Exact match|r  —  matches the full item name (case-insensitive)\n" ..
+		"   |cff88bbccHearthstone|r\n" ..
+		"   |cff88bbccSilk Cloth|r\n\n" ..
+		"|cffffd100Wildcard (*)|r  —  use * for partial matching\n" ..
+		"   |cff88bbcc*Leather*|r  matches any item containing \"Leather\"\n" ..
+		"   |cff88bbccRugged*|r  matches items starting with \"Rugged\"\n" ..
+		"   |cff88bbcc*Potion|r  matches items ending with \"Potion\"\n\n" ..
+		"|cffffd100Partial (#)|r  —  Lua pattern match on item name\n" ..
+		"   |cff88bbcc#^Heavy.*Leather$|r  items starting with Heavy, ending with Leather\n" ..
+		"   |cff88bbcc#Essence|r  any item whose name contains \"Essence\"\n\n" ..
+		"|cffffd100Tooltip (##)|r  —  Lua pattern match on tooltip text\n" ..
+		"   |cff88bbcc##Soulbound|r  any soulbound item\n" ..
+		"   |cff88bbcc##Use: Restores|r  usable recovery items\n\n" ..
+		"|cffffd100Comments|r  —  add notes after a semicolon\n" ..
+		"   |cff88bbcc*Beast* ; skinning mats|r\n" ..
+		"   |cff88bbccSilk Cloth ; save for tailoring|r"
+	)
+
+	-- Section: Name Filter Examples
+	addHeader("Name Filter Examples")
+	addBody(
+		"|cffffd100Keep all cloth and leather:|r\n" ..
+		"   |cff88bbcc*Cloth*|r\n" ..
+		"   |cff88bbcc*Leather*|r\n\n" ..
+		"|cffffd100Delete all grey junk but keep a specific grey item:|r\n" ..
+		"   Filters tab: set Poor (Grey) quality to Delete\n" ..
+		"   Keep names: |cff88bbccOld Blanchy's Blanket|r\n\n" ..
+		"|cffffd100Keep all herbs:|r\n" ..
+		"   Filters tab: set Trade Goods > Herb to Keep\n" ..
+		"   |cff888888or|r Keep names: |cff88bbcc##Herb|r  (matches tooltip)\n\n" ..
+		"|cffffd100Delete food and drink under a certain value:|r\n" ..
+		"   Delete names: |cff88bbcc*Water|r  and  |cff88bbcc*Bread|r\n" ..
+		"   |cff888888or|r Filters tab: set Consumable > Food & Drink to Delete"
+	)
+
+	-- Section: Other Tips
+	addHeader("Tips")
+	addBody(
+		"|cffffd100Quest items|r are automatically added to the keep-names list\n" ..
+		"when looted. If a quest item also matches a delete-name rule,\n" ..
+		"the delete rule wins and the auto-keep entry is removed.\n\n" ..
+		"|cffffd100Bag slots|r  —  enable \"Maintain free bag slots\" on the\n" ..
+		"Settings tab to auto-delete the lowest-value delete-flagged\n" ..
+		"items when your bags are nearly full. Items matching keep rules\n" ..
+		"or no rules are never deleted this way.\n\n" ..
+		"|cffffd100Loot bot mode|r  —  toggle with |cff88bbcc/lf lootbot|r. Filters\n" ..
+		"items added to your bags from any source (e.g. Scavenger companion),\n" ..
+		"not just loot windows.\n\n" ..
+		"|cffffd100All settings are per-character.|r Use the Import tab to copy\n" ..
+		"settings between characters."
+	)
+
+	helpChild:SetHeight(math.abs(yOff) + 10)
 
 	return page
 end
