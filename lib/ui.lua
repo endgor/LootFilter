@@ -27,7 +27,7 @@ local QUALITY_ORDER = {
 	{ key = "QUhQuest",  val = -1, name = "Quest",     short = "Quest" },
 }
 
-local PAGES = { "Filters", "Names", "Values", "Cleanup", "Settings" }
+local PAGES = { "Filters", "Names", "Values", "Cleanup", "Settings", "Import", "Help" }
 
 local sidebarButtons = {}
 local pageFrames = {}
@@ -503,7 +503,7 @@ local function createFiltersPage(parent)
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText:SetPoint("TOPLEFT", qHeader, "BOTTOMLEFT", 0, -4)
 	helpText:SetText("Click to cycle: -- (neutral) > KEEP > DELETE")
-	helpText:SetTextColor(0.6, 0.6, 0.6)
+	helpText:SetTextColor(1, 1, 1)
 
 	local chipStartY = -42
 	for i, qi in ipairs(QUALITY_ORDER) do
@@ -517,7 +517,7 @@ local function createFiltersPage(parent)
 	local helpText2 = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText2:SetPoint("TOPLEFT", tHeader, "BOTTOMLEFT", 0, -4)
 	helpText2:SetText("Click category to expand. Click subtype to cycle state.")
-	helpText2:SetTextColor(0.6, 0.6, 0.6)
+	helpText2:SetTextColor(1, 1, 1)
 
 	-- Search box
 	local searchBG = createPanel(page, nil, 200, 22)
@@ -746,7 +746,7 @@ local function createValuesPage(parent)
 	freeSlotsLabel:SetText(LFINT_TXT_NUMFREEBAGSLOTS)
 	freeSlotsLabel:Hide()
 
-	local freeSlots, freeSlotsBG = createValueEditBox(page, "LootFilterEditBox5", 220, -54, 40)
+	local freeSlots, freeSlotsBG = createValueEditBox(page, "LootFilterEditBox5", 250, -54, 40)
 	freeSlots:Hide()
 	freeSlotsBG:Hide()
 	LootFilterTextBackground5 = freeSlotsBG
@@ -835,7 +835,7 @@ local function createCleanupPage(parent)
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -28)
 	helpText:SetText("Items that don't match any keep rules. Shift-click to add to keep list.")
-	helpText:SetTextColor(0.6, 0.6, 0.6)
+	helpText:SetTextColor(1, 1, 1)
 
 	-- Action buttons
 	local deleteBtn = CreateFrame("Button", "LootFilterButtonDeleteItems", page, "GameMenuButtonTemplate")
@@ -919,47 +919,62 @@ local function createSettingsPage(parent)
 
 	-- General
 	createSectionHeader(page, "General", 10, -10)
-	createCheckOption(page, "LootFilterOPEnable", 14, -32)
-	createCheckOption(page, "LootFilterOPLootBot", 14, -50)
-	createCheckOption(page, "LootFilterOPTooltips", 14, -68)
-	createCheckOption(page, "LootFilterOPConfirmDelete", 14, -86)
+	createCheckOption(page, "LootFilterOPEnable", 14, -36)
+	createCheckOption(page, "LootFilterOPLootBot", 14, -54)
+	createCheckOption(page, "LootFilterOPTooltips", 14, -72)
+	createCheckOption(page, "LootFilterOPConfirmDelete", 14, -90)
 
 	-- Notifications
-	createSectionHeader(page, "Notifications", 10, -112)
-	createCheckOption(page, "LootFilterOPNotifyDelete", 14, -134)
-	createCheckOption(page, "LootFilterOPNotifyKeep", 270, -134)
-	createCheckOption(page, "LootFilterOPNotifyNoMatch", 14, -152)
-	createCheckOption(page, "LootFilterOPNotifyOpen", 270, -152)
-	createCheckOption(page, "LootFilterOPNotifyNew", 14, -170)
+	createSectionHeader(page, "Notifications", 10, -118)
+	createCheckOption(page, "LootFilterOPNotifyDelete", 14, -144)
+	createCheckOption(page, "LootFilterOPNotifyKeep", 270, -144)
+	createCheckOption(page, "LootFilterOPNotifyNoMatch", 14, -162)
+	createCheckOption(page, "LootFilterOPNotifyOpen", 270, -162)
 
 	-- Bags
-	createSectionHeader(page, "Monitored Bags", 10, -196)
+	createSectionHeader(page, "Monitored Bags", 10, -190)
 
 	local helpBags = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	helpBags:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -214)
+	helpBags:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -212)
 	helpBags:SetText("Select which bags Loot Filter should scan.")
-	helpBags:SetTextColor(0.6, 0.6, 0.6)
+	helpBags:SetTextColor(1, 1, 1)
 
-	createCheckOption(page, "LootFilterOPBag0", 14, -232)
-	createCheckOption(page, "LootFilterOPBag1", 120, -232)
-	createCheckOption(page, "LootFilterOPBag2", 200, -232)
-	createCheckOption(page, "LootFilterOPBag3", 280, -232)
-	createCheckOption(page, "LootFilterOPBag4", 360, -232)
+	createCheckOption(page, "LootFilterOPBag0", 14, -230)
+	createCheckOption(page, "LootFilterOPBag1", 120, -230)
+	createCheckOption(page, "LootFilterOPBag2", 200, -230)
+	createCheckOption(page, "LootFilterOPBag3", 280, -230)
+	createCheckOption(page, "LootFilterOPBag4", 360, -230)
 
-	-- Character copy
-	createSectionHeader(page, "Character Settings", 10, -260)
+	return page
+end
+
+-- -------------------------------------------------------------------------
+-- Page: Import
+-- -------------------------------------------------------------------------
+
+local function createImportPage(parent)
+	local page = CreateFrame("Frame", "LootFilterPageImport", parent)
+	page:SetAllPoints()
+	page:Hide()
+
+	createSectionHeader(page, "Character Settings", 10, -10)
+
+	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	helpText:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -28)
+	helpText:SetText("Copy settings from another character, or delete a character's saved settings.")
+	helpText:SetTextColor(1, 1, 1)
 
 	local copyLabel = page:CreateFontString("LootFilterEditBoxTitleCopy3", "OVERLAY", "GameFontNormal")
-	copyLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -282)
+	copyLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -52)
 	copyLabel:SetText(LFINT_TXT_SELECTCHARCOPY)
 
 	local copyDrop = CreateFrame("Button", "LootFilterSelectDropDown", page, "UIDropDownMenuTemplate")
-	copyDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -298)
+	copyDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -68)
 
 	local copyBtn = CreateFrame("Button", "LootFilterButtonRealCopy", page, "GameMenuButtonTemplate")
 	copyBtn:SetWidth(110)
 	copyBtn:SetHeight(22)
-	copyBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 350, -302)
+	copyBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 350, -72)
 	copyBtn:SetText(LFINT_BTN_COPYSETTINGS)
 	copyBtn:SetScript("OnClick", function() LootFilter.copySettings() end)
 	copyBtn:SetScript("OnShow", function()
@@ -979,14 +994,52 @@ local function createSettingsPage(parent)
 	end)
 
 	local copySuccess = page:CreateFontString("LootFilterEditBoxTitleCopy4", "OVERLAY", "GameFontNormal")
-	copySuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -344)
+	copySuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -114)
 	copySuccess:SetText(LFINT_TXT_COPYSUCCESS)
 	copySuccess:Hide()
 
 	local delSuccess = page:CreateFontString("LootFilterEditBoxTitleCopy5", "OVERLAY", "GameFontNormal")
-	delSuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -344)
+	delSuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -114)
 	delSuccess:SetText(LFINT_TXT_DELETESUCCESS)
 	delSuccess:Hide()
+
+	return page
+end
+
+-- -------------------------------------------------------------------------
+-- Page: Help
+-- -------------------------------------------------------------------------
+
+local function createHelpPage(parent)
+	local page = CreateFrame("Frame", "LootFilterPageHelp", parent)
+	page:SetAllPoints()
+	page:Hide()
+
+	createSectionHeader(page, "How It Works", 10, -10)
+
+	local body = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	body:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -32)
+	body:SetWidth(540)
+	body:SetJustifyH("LEFT")
+	body:SetSpacing(4)
+	body:SetText(
+		"|cffffd100Filters|r\n" ..
+		"Set quality and item-type rules. Each entry cycles through\n" ..
+		"neutral (ignored), KEEP, or DELETE.\n\n" ..
+		"|cffffd100Names|r\n" ..
+		"Keep or delete specific items by name. Supports wildcards\n" ..
+		"(*Flask*), patterns (#Beast), and tooltip search (##Soulbound).\n\n" ..
+		"|cffffd100Values|r\n" ..
+		"Auto-delete items below a gold threshold and manage the\n" ..
+		"number of free bag slots to maintain.\n\n" ..
+		"|cffffd100Cleanup|r\n" ..
+		"Review items flagged for deletion. Delete them directly or\n" ..
+		"sell at a vendor. Shift-click to move an item to the keep list.\n\n" ..
+		"|cffffd100Settings|r\n" ..
+		"Toggle features, notifications, and select which bags to scan.\n\n" ..
+		"|cffffd100Import|r\n" ..
+		"Copy all settings from another character on this account."
+	)
 
 	return page
 end
@@ -1025,7 +1078,7 @@ function LootFilter.navigateTo(pageName)
 	-- Page-specific actions
 	if pageName == "Values" then
 		LootFilter.checkDependencies()
-	elseif pageName == "Settings" then
+	elseif pageName == "Import" then
 		LootFilter.initCopyTab()
 	end
 
@@ -1074,6 +1127,8 @@ function LootFilter.buildUI()
 	pageFrames["Values"]   = createValuesPage(content)
 	pageFrames["Cleanup"]  = createCleanupPage(content)
 	pageFrames["Settings"] = createSettingsPage(content)
+	pageFrames["Import"]   = createImportPage(content)
+	pageFrames["Help"]     = createHelpPage(content)
 
 	-- Global aliases for backward compat
 	LootFilterFrameGeneral = pageFrames["Settings"]
@@ -1288,8 +1343,6 @@ function LootFilter.setRadioButtonValue(button)
 		LootFilterVars[LootFilter.REALMPLAYER].notifynomatch = checked
 	elseif name == "OPNotifyOpen" then
 		LootFilterVars[LootFilter.REALMPLAYER].notifyopen = checked
-	elseif name == "OPNotifyNew" then
-		LootFilterVars[LootFilter.REALMPLAYER].notifynew = checked
 	elseif name == "OPValKeep" then
 		LootFilterVars[LootFilter.REALMPLAYER].keepList["VAOn"] = checked
 	elseif name == "OPValDelete" then
@@ -1337,8 +1390,6 @@ function LootFilter.getRadioButtonValue(button)
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifykeep)
 	elseif name == "OPNotifyOpen" then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifyopen)
-	elseif name == "OPNotifyNew" then
-		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifynew)
 	elseif name == "OPNotifyNoMatch" then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].notifynomatch)
 	elseif name == "OPValKeep" then
