@@ -24,33 +24,27 @@ function LootFilter.processCaching()
 	if (GetTime() > LootFilter.LOOT_MAXTIME) then
 		LootFilter.filterScheduled = false;
 		return;
-	end;
-			
+	end
+
 	local slots = LootFilter.constructCleanList();
-	
-	if (slots < LootFilterVars[LootFilter.REALMPLAYER].freebagslots) and (table.getn(LootFilter.cleanList) > 0)  then
-		local needSlots = LootFilterVars[LootFilter.REALMPLAYER].freebagslots-slots;
-		
+
+	if (slots < LootFilterVars[LootFilter.REALMPLAYER].freebagslots) and (table.getn(LootFilter.cleanList) > 0) then
 		table.sort(LootFilter.cleanList, LootFilter.sortByValue);
-		if (LootFilter.deleteItemFromBag(LootFilter.cleanList[1])) then
-			local calculatedValue;
-			if (LootFilter.cleanList[1]["value"] < 0) then -- item matched a delete property
-				LootFilter.cleanList[1]["value"]  = LootFilter.cleanList[1]["value"] + 10000000; -- restore its original value
-			end;
-			if (LootFilterVars[LootFilter.REALMPLAYER].calculate == 1) then
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]);
-			elseif (LootFilterVars[LootFilter.REALMPLAYER].calculate == 2) then
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["amount"]);
-			else
-				calculatedValue = tonumber(LootFilter.cleanList[1]["value"]*LootFilter.cleanList[1]["stack"]);
-			end;
-			LootFilter.print(LootFilter.cleanList[1]["link"].." "..LootFilter.Locale.LocText["LTWasDeleted"]..": "..LootFilter.Locale.LocText["LTItemLowestValue"].." ("..calculatedValue / 10000 ..")");
+		local item = LootFilter.cleanList[1];
+		if (LootFilter.deleteItemFromBag(item)) then
+			if (item["value"] < 0) then
+				item["value"] = item["value"] + 10000000;
+			end
+			if (LootFilterVars[LootFilter.REALMPLAYER].notifydelete) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
+				LootFilter.print(item["link"] .. " " .. LootFilter.Locale.LocText["LTWasDeleted"] ..
+					": " .. LootFilter.Locale.LocText["LTBagSpaceLow"]);
+			end
 			table.remove(LootFilter.cleanList, 1);
-		end;
+		end
 		LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
 	else
 		LootFilter.filterScheduled = false;
-	end;
+	end
 end;
 
 

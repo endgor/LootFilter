@@ -11,12 +11,7 @@ function LootFilter.confirmDelete(item)
 				LootFilter.inDialog = false;
 				if not LootFilter.filterScheduled then
 					LootFilter.filterScheduled = true;
-					if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
-						LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-					else
-						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-					end;
+					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 				end;
 			end,
 			OnAccept = function(self, data)

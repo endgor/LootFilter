@@ -115,12 +115,7 @@ function LootFilter.processBagUpdate()
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
 		if not LootFilter.filterScheduled then
 			LootFilter.filterScheduled = true;
-			if LootFilterVars[LootFilter.REALMPLAYER].caching then
-				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-			else
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-			end
+			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 		end
 	end
 
@@ -233,9 +228,7 @@ function LootFilter.OnEvent()
 					if (item ~= nil) then
 						LootFilter.debug("|cff44ff44[LOOT]|r Loot window item: " ..
 							tostring(item["name"]) .. " (id=" .. tostring(item["id"]) .. ") " .. tostring(item["link"]));
-						if (not LootFilterVars[LootFilter.REALMPLAYER].caching) then
-							table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
-						end;
+						table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
 						if (GetSellValue) then -- record the value of this item
 							LootFilter.sessionAdd(item);
 							LootFilterVars[LootFilter.REALMPLAYER].session["end"] = time();
@@ -256,12 +249,7 @@ function LootFilter.OnEvent()
 		LootFilter.itemOpen = false;
 		if not LootFilter.filterScheduled then
 			LootFilter.filterScheduled = true;
-			if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
-				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-			else
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-			end;
+			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 		end;
 	end;
 

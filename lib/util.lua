@@ -374,9 +374,7 @@ function LootFilter.constructCleanList()
 						LootFilter.cleanList[z] = item;
 						z = z + 1;
 					else
-						-- No match: add with normal value (lowest delete priority)
-						LootFilter.cleanList[z] = item;
-						z = z + 1;
+						-- No match: skip (only explicitly delete-flagged items are candidates)
 					end;
 				else
 					slots = slots + 1;

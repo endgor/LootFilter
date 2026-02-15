@@ -4,7 +4,11 @@ function LootFilter.processItemStack()
 		return;
 	end
 	if (table.getn(LootFilterVars[LootFilter.REALMPLAYER].itemStack) == 0) then
-		LootFilter.filterScheduled = false;
+		if LootFilterVars[LootFilter.REALMPLAYER].caching then
+			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
+		else
+			LootFilter.filterScheduled = false;
+		end
 		return;
 	end;
 
