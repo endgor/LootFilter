@@ -214,6 +214,40 @@ local function updateTypeRowVisual(row)
 	end
 end
 
+local function getSubtypeRows(typeName)
+	local rows = {}
+	for _, row in ipairs(typeRows) do
+		if row.isSubtype and row.parentType == typeName then
+			table.insert(rows, row)
+		end
+	end
+	return rows
+end
+
+local function updateHeaderStateLabel(headerRow)
+	local subtypes = getSubtypeRows(headerRow.typeName)
+	if #subtypes == 0 then return end
+	local first = getTriState(subtypes[1].typeKey)
+	local allSame = true
+	for i = 2, #subtypes do
+		if getTriState(subtypes[i].typeKey) ~= first then
+			allSame = false
+			break
+		end
+	end
+	if allSame then
+		if first == "keep" then
+			headerRow.stateLabel:SetText("|cff33ff33KEEP|r")
+		elseif first == "delete" then
+			headerRow.stateLabel:SetText("|cffff3333DEL|r")
+		else
+			headerRow.stateLabel:SetText("|cff888888--|r")
+		end
+	else
+		headerRow.stateLabel:SetText("|cffbbbbbbmixed|r")
+	end
+end
+
 local function layoutTypeRows()
 	local searching = typeSearchText ~= ""
 	local searchLower = searching and string.lower(typeSearchText) or ""
@@ -292,12 +326,55 @@ local function createTypeHeaderRow(parent, typeName, displayName)
 	label:SetText(displayName)
 	label:SetTextColor(1, 0.82, 0)
 
+	local stateLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	stateLabel:SetPoint("RIGHT", row, "RIGHT", -20, 0)
+	stateLabel:SetText("|cff888888--|r")
+	row.stateLabel = stateLabel
+
+	-- Clickable area over the state label for cycling all subtypes
+	local stateBtn = CreateFrame("Button", nil, row)
+	stateBtn:SetWidth(60)
+	stateBtn:SetHeight(20)
+	stateBtn:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+	stateBtn:SetScript("OnClick", function()
+		local subtypes = getSubtypeRows(typeName)
+		if #subtypes == 0 then return end
+		-- Determine aggregate state
+		local first = getTriState(subtypes[1].typeKey)
+		local allSame = true
+		for i = 2, #subtypes do
+			if getTriState(subtypes[i].typeKey) ~= first then
+				allSame = false
+				break
+			end
+		end
+		-- Compute next state
+		local nextState
+		if allSame then
+			if first == "neutral" then nextState = "keep"
+			elseif first == "keep" then nextState = "delete"
+			else nextState = "neutral" end
+		else
+			nextState = "keep"
+		end
+		-- Apply to all subtypes
+		for _, sub in ipairs(subtypes) do
+			setTriState(sub.typeKey, nextState, false)
+			updateTypeRowVisual(sub)
+		end
+		updateHeaderStateLabel(row)
+	end)
+
 	local hl = row:CreateTexture(nil, "HIGHLIGHT")
 	hl:SetAllPoints()
 	hl:SetTexture(1, 1, 1, 0.04)
 
 	row:SetScript("OnMouseUp", function()
-		expandedTypes[typeName] = not expandedTypes[typeName]
+		if expandedTypes[typeName] then
+			expandedTypes[typeName] = nil
+		else
+			expandedTypes[typeName] = true
+		end
 		arrow:SetText(expandedTypes[typeName] and "v" or ">")
 		layoutTypeRows()
 	end)
@@ -335,6 +412,13 @@ local function createTypeSubRow(parent, key, displayName, parentTypeName)
 	row:SetScript("OnMouseUp", function()
 		cycleTriState(key, false)
 		updateTypeRowVisual(row)
+		-- Update parent header's aggregate state label
+		for _, r in ipairs(typeRows) do
+			if not r.isSubtype and r.typeName == parentTypeName then
+				updateHeaderStateLabel(r)
+				break
+			end
+		end
 	end)
 	row:SetScript("OnEnter", function()
 		LootFilter.showTooltip(row, "LToolTip13")
@@ -1035,6 +1119,7 @@ function LootFilter.initTypeTab()
 				updateTypeRowVisual(subRow)
 			end
 		end
+		updateHeaderStateLabel(headerRow)
 	end
 
 	layoutTypeRows()
