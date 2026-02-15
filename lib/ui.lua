@@ -1138,22 +1138,22 @@ local function createHelpPage(parent)
 	body:SetJustifyH("LEFT")
 	body:SetSpacing(4)
 	body:SetText(
-		"|cffffd100Filters|r\n" ..
-		"Set quality and item-type rules. Each entry cycles through\n" ..
-		"neutral (ignored), KEEP, or DELETE.\n\n" ..
-		"|cffffd100Names|r\n" ..
-		"Keep or delete specific items by name. Supports wildcards\n" ..
-		"(*Flask*), patterns (#Beast), and tooltip search (##Soulbound).\n\n" ..
-		"|cffffd100Values|r\n" ..
-		"Auto-delete items below a gold threshold and manage the\n" ..
-		"number of free bag slots to maintain.\n\n" ..
-		"|cffffd100Cleanup|r\n" ..
-		"Review items flagged for deletion. Delete them directly or\n" ..
-		"sell at a vendor. Shift-click to move an item to the keep list.\n\n" ..
-		"|cffffd100Settings|r\n" ..
-		"Toggle features, notifications, and select which bags to scan.\n\n" ..
-		"|cffffd100Import|r\n" ..
-		"Copy all settings from another character on this account."
+		"When you loot an item, Loot Filter checks your rules to decide\n" ..
+		"whether to keep or delete it. Rules are checked in this order:\n\n" ..
+		"|cffffd100 1.|r  Keep Names  |cff888888(Names tab)|r\n" ..
+		"|cffffd100 2.|r  Delete Names  |cff888888(Names tab)|r\n" ..
+		"|cffffd100 3.|r  Keep Properties  |cff888888(Filters + Values tabs)|r\n" ..
+		"|cffffd100 4.|r  Delete Properties  |cff888888(Filters + Values tabs)|r\n\n" ..
+		"The first rule that matches wins. If nothing matches, the\n" ..
+		"item is kept by default.\n\n" ..
+		"|cffffd100Good to know|r\n" ..
+		"|cffffffffNames always override properties.|r If an item is on your\n" ..
+		"keep-names list, no delete property can remove it.\n\n" ..
+		"Properties are quality (Grey, Green, Blue ...), item type\n" ..
+		"(Cloth, Potion, Herb ...) and vendor value. Each property\n" ..
+		"can be neutral (ignored), KEEP, or DELETE.\n\n" ..
+		"Quest items are automatically added to the keep list.\n\n" ..
+		"All settings are per-character."
 	)
 
 	return page
