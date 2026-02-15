@@ -1,8 +1,8 @@
 -- ---------------------------------------------------------------------------
--- ui.lua  –  Loot Filter UI (sidebar navigation, programmatic layout)
+-- ui.lua  -  Loot Filter UI (sidebar navigation, programmatic layout)
 -- ---------------------------------------------------------------------------
 
--- WoW 3.3.5a quality colours (fallback if ITEM_QUALITY_COLORS unavailable)
+-- WoW 3.3.5a quality colours
 local QUALITY_COLORS = {
 	[0]  = { r = 0.62, g = 0.62, b = 0.62 }, -- Poor (Grey)
 	[1]  = { r = 1.00, g = 1.00, b = 1.00 }, -- Common (White)
@@ -15,7 +15,6 @@ local QUALITY_COLORS = {
 	[-1] = { r = 1.00, g = 1.00, b = 0.00 }, -- Quest (Yellow)
 }
 
--- Map quality keys to their numeric values and short names
 local QUALITY_ORDER = {
 	{ key = "QUaGrey",   val = 0,  name = "Poor",      short = "Grey" },
 	{ key = "QUbWhite",  val = 1,  name = "Common",    short = "White" },
@@ -28,10 +27,8 @@ local QUALITY_ORDER = {
 	{ key = "QUhQuest",  val = -1, name = "Quest",     short = "Quest" },
 }
 
--- Sidebar page definitions
 local PAGES = { "Filters", "Names", "Values", "Cleanup", "Settings" }
 
--- Keep references to sidebar buttons and page frames
 local sidebarButtons = {}
 local pageFrames = {}
 
@@ -39,7 +36,7 @@ local pageFrames = {}
 -- Helpers
 -- -------------------------------------------------------------------------
 
-local function createTooltipPanel(parent, name, w, h)
+local function createPanel(parent, name, w, h)
 	local f = CreateFrame("Frame", name, parent)
 	f:SetWidth(w)
 	f:SetHeight(h)
@@ -54,12 +51,11 @@ local function createTooltipPanel(parent, name, w, h)
 	return f
 end
 
-local function createSectionHeader(parent, text, anchorTo, xOff, yOff)
+local function createSectionHeader(parent, text, xOff, yOff)
 	local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-	fs:SetPoint("TOPLEFT", anchorTo or parent, anchorTo and "BOTTOMLEFT" or "TOPLEFT", xOff or 0, yOff or 0)
+	fs:SetPoint("TOPLEFT", parent, "TOPLEFT", xOff or 0, yOff or 0)
 	fs:SetText(text)
 	fs:SetTextColor(1, 0.82, 0)
-	-- separator line
 	local line = parent:CreateTexture(nil, "ARTWORK")
 	line:SetHeight(1)
 	line:SetPoint("TOPLEFT", fs, "BOTTOMLEFT", 0, -2)
@@ -68,107 +64,27 @@ local function createSectionHeader(parent, text, anchorTo, xOff, yOff)
 	return fs, line
 end
 
-local function createCheckOption(parent, frameName, x, y, relativeTo, relativePoint)
+local function createCheckOption(parent, frameName, x, y)
 	local f = CreateFrame("Frame", frameName, parent, "LootFilterOptionTemplate2")
 	f:ClearAllPoints()
-	if relativeTo then
-		f:SetPoint("TOPLEFT", relativeTo, relativePoint or "BOTTOMLEFT", x, y)
-	else
-		f:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
-	end
+	f:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
 	f:Show()
 	return f
 end
 
--- -------------------------------------------------------------------------
--- Sidebar
--- -------------------------------------------------------------------------
-
-local function createSidebar(parent)
-	local sidebar = createTooltipPanel(parent, "LootFilterSidebar", 120, 420)
-	sidebar:SetPoint("TOPLEFT", parent, "TOPLEFT", 16, -38)
-
-	-- Icon + version at top of sidebar
-	local icon = sidebar:CreateTexture(nil, "ARTWORK")
-	icon:SetTexture("Interface\\AddOns\\LootFilter\\Images\\LFbutton")
-	icon:SetWidth(28)
-	icon:SetHeight(28)
-	icon:SetPoint("TOP", sidebar, "TOP", 0, -10)
-
-	local verText = sidebar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	verText:SetPoint("TOP", icon, "BOTTOM", 0, -2)
-	verText:SetTextColor(0.6, 0.6, 0.6)
-	verText:SetText("v" .. (LootFilter.VERSION or ""))
-
-	-- Nav buttons
-	local btnHeight = 28
-	local startY = -60
-	for i, pageName in ipairs(PAGES) do
-		local btn = CreateFrame("Button", "LootFilterNav" .. pageName, sidebar)
-		btn:SetWidth(108)
-		btn:SetHeight(btnHeight)
-		btn:SetPoint("TOP", sidebar, "TOP", 0, startY - (i - 1) * (btnHeight + 4))
-
-		-- Highlight texture (selected state)
-		local hlTex = btn:CreateTexture(nil, "BACKGROUND")
-		hlTex:SetAllPoints()
-		hlTex:SetTexture(1, 1, 1, 0.08)
-		hlTex:Hide()
-		btn.hlTex = hlTex
-
-		-- Hover texture
-		local hoverTex = btn:CreateTexture(nil, "HIGHLIGHT")
-		hoverTex:SetAllPoints()
-		hoverTex:SetTexture(1, 1, 1, 0.05)
-
-		-- Active indicator bar on the left
-		local indicator = btn:CreateTexture(nil, "OVERLAY")
-		indicator:SetWidth(3)
-		indicator:SetPoint("TOPLEFT", btn, "TOPLEFT", 0, 0)
-		indicator:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
-		indicator:SetTexture(1, 0.82, 0, 1)
-		indicator:Hide()
-		btn.indicator = indicator
-
-		-- Label
-		local label = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		label:SetPoint("LEFT", btn, "LEFT", 12, 0)
-		label:SetText(pageName)
-		btn.label = label
-
-		btn:SetScript("OnClick", function()
-			LootFilter.navigateTo(pageName)
-		end)
-
-		sidebarButtons[pageName] = btn
-	end
-
-	-- Close button at the bottom
-	local closeBtn = CreateFrame("Button", "LootFilterClose", sidebar, "GameMenuButtonTemplate")
-	closeBtn:SetWidth(90)
-	closeBtn:SetHeight(22)
-	closeBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 10)
-	closeBtn:SetText(LFINT_BTN_CLOSE or "Close")
-	closeBtn:SetScript("OnClick", function()
-		LootFilter.setNames()
-		LootFilter.setNamesDelete()
-		LootFilter.setItemValue()
-		LootFilterOptions:Hide()
-		LootFilter.hasFocus = 0
-	end)
-
-	return sidebar
+local function safeHide()
+	LootFilterOptions:Hide()
+	LootFilter.hasFocus = 0
 end
 
 -- -------------------------------------------------------------------------
--- Page: Filters (Quality + Types)
+-- Tri-state logic (Neutral / Keep / Delete)
 -- -------------------------------------------------------------------------
 
-local qualityChips = {}
-local typeRows = {}
-local typeScrollChild
-
 local function getTriState(key)
+	if LootFilter.REALMPLAYER == "" or LootFilterVars[LootFilter.REALMPLAYER] == nil then
+		return "neutral"
+	end
 	if LootFilterVars[LootFilter.REALMPLAYER].keepList[key] ~= nil then
 		return "keep"
 	elseif LootFilterVars[LootFilter.REALMPLAYER].deleteList[key] ~= nil then
@@ -178,10 +94,9 @@ local function getTriState(key)
 end
 
 local function setTriState(key, state, isQuality)
-	-- Clear both lists first
+	if LootFilter.REALMPLAYER == "" or LootFilterVars[LootFilter.REALMPLAYER] == nil then return end
 	LootFilterVars[LootFilter.REALMPLAYER].keepList[key] = nil
 	LootFilterVars[LootFilter.REALMPLAYER].deleteList[key] = nil
-
 	if state == "keep" then
 		if isQuality then
 			LootFilterVars[LootFilter.REALMPLAYER].keepList[key] = LootFilter.Locale.qualities[key]
@@ -199,14 +114,19 @@ end
 
 local function cycleTriState(key, isQuality)
 	local cur = getTriState(key)
-	local next
-	if cur == "neutral" then next = "keep"
-	elseif cur == "keep" then next = "delete"
-	else next = "neutral"
-	end
-	setTriState(key, next, isQuality)
-	return next
+	local nxt
+	if cur == "neutral" then nxt = "keep"
+	elseif cur == "keep" then nxt = "delete"
+	else nxt = "neutral" end
+	setTriState(key, nxt, isQuality)
+	return nxt
 end
+
+-- -------------------------------------------------------------------------
+-- Quality chips
+-- -------------------------------------------------------------------------
+
+local qualityChips = {}
 
 local function updateChipVisual(chip)
 	local state = getTriState(chip.qualKey)
@@ -228,10 +148,11 @@ local function updateChipVisual(chip)
 end
 
 local function createQualityChip(parent, qi, x, y)
-	local chip = CreateFrame("Button", "LootFilterQChip" .. qi.key, parent)
+	local chip = CreateFrame("Frame", "LootFilterQChip" .. qi.key, parent)
 	chip:SetWidth(60)
 	chip:SetHeight(42)
 	chip:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
+	chip:EnableMouse(true)
 
 	chip:SetBackdrop({
 		bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -243,51 +164,52 @@ local function createQualityChip(parent, qi, x, y)
 	local c = QUALITY_COLORS[qi.val] or QUALITY_COLORS[0]
 	chip:SetBackdropColor(c.r * 0.25, c.g * 0.25, c.b * 0.25, 0.9)
 
-	-- Quality name
 	local nameText = chip:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	nameText:SetPoint("TOP", chip, "TOP", 0, -5)
 	nameText:SetText(qi.short)
 	nameText:SetTextColor(c.r, c.g, c.b)
 
-	-- State label
 	local stateText = chip:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	stateText:SetPoint("BOTTOM", chip, "BOTTOM", 0, 5)
+	stateText:SetText("--")
+	stateText:SetTextColor(0.5, 0.5, 0.5)
 	chip.stateText = stateText
 
 	chip.qualKey = qi.key
 	chip.qualVal = qi.val
 
-	-- Hover highlight
-	local hl = chip:CreateTexture(nil, "HIGHLIGHT")
-	hl:SetAllPoints()
-	hl:SetTexture(1, 1, 1, 0.08)
-
-	chip:SetScript("OnClick", function()
-		cycleTriState(chip.qualKey, true)
+	chip:SetScript("OnMouseUp", function()
+		cycleTriState(qi.key, true)
 		updateChipVisual(chip)
 	end)
-
 	chip:SetScript("OnEnter", function()
 		LootFilter.showTooltip(chip, "LToolTip13")
 	end)
 	chip:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	updateChipVisual(chip)
+	-- Do NOT call updateChipVisual here - SavedVars may not be loaded yet.
+	-- It will be called from initQualityTab() after ADDON_LOADED.
+
 	qualityChips[qi.key] = chip
 	return chip
 end
 
--- Type tree helpers
+-- -------------------------------------------------------------------------
+-- Item type tree
+-- -------------------------------------------------------------------------
+
+local typeRows = {}
+local typeScrollChild
 local expandedTypes = {}
 
 local function updateTypeRowVisual(row)
 	local state = getTriState(row.typeKey)
 	if state == "keep" then
-		row.stateBtn:SetText("|cff33ff33KEEP|r")
+		row.stateLabel:SetText("|cff33ff33KEEP|r")
 	elseif state == "delete" then
-		row.stateBtn:SetText("|cffff3333DEL|r")
+		row.stateLabel:SetText("|cffff3333DEL|r")
 	else
-		row.stateBtn:SetText("|cff888888--|r")
+		row.stateLabel:SetText("|cff888888--|r")
 	end
 end
 
@@ -296,6 +218,7 @@ local function layoutTypeRows()
 	for _, row in ipairs(typeRows) do
 		if row.isSubtype then
 			if expandedTypes[row.parentType] then
+				row:ClearAllPoints()
 				row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 24, -y)
 				row:Show()
 				y = y + 18
@@ -303,6 +226,7 @@ local function layoutTypeRows()
 				row:Hide()
 			end
 		else
+			row:ClearAllPoints()
 			row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 0, -y)
 			row:Show()
 			y = y + 20
@@ -312,31 +236,29 @@ local function layoutTypeRows()
 end
 
 local function createTypeHeaderRow(parent, typeName, displayName)
-	local row = CreateFrame("Button", nil, parent)
-	row:SetWidth(530)
+	local row = CreateFrame("Frame", nil, parent)
+	row:SetWidth(520)
 	row:SetHeight(20)
+	row:EnableMouse(true)
 	row.isSubtype = false
 	row.typeName = typeName
 
-	-- Expand/collapse arrow
 	local arrow = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	arrow:SetPoint("LEFT", row, "LEFT", 2, 0)
-	arrow:SetText(expandedTypes[typeName] and "v" or ">")
+	arrow:SetText(">")
 	arrow:SetTextColor(0.8, 0.8, 0.8)
 	row.arrow = arrow
 
-	-- Type name
 	local label = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	label:SetPoint("LEFT", row, "LEFT", 16, 0)
 	label:SetText(displayName)
 	label:SetTextColor(1, 0.82, 0)
 
-	-- Hover
 	local hl = row:CreateTexture(nil, "HIGHLIGHT")
 	hl:SetAllPoints()
 	hl:SetTexture(1, 1, 1, 0.04)
 
-	row:SetScript("OnClick", function()
+	row:SetScript("OnMouseUp", function()
 		expandedTypes[typeName] = not expandedTypes[typeName]
 		arrow:SetText(expandedTypes[typeName] and "v" or ">")
 		layoutTypeRows()
@@ -346,66 +268,120 @@ local function createTypeHeaderRow(parent, typeName, displayName)
 end
 
 local function createTypeSubRow(parent, key, displayName, parentTypeName)
-	local row = CreateFrame("Button", nil, parent)
+	local row = CreateFrame("Frame", nil, parent)
 	row:SetWidth(520)
 	row:SetHeight(18)
+	row:EnableMouse(true)
 	row.isSubtype = true
 	row.parentType = parentTypeName
 	row.typeKey = key
 
-	-- Also create the hidden DKD frame so backend code can find it by name
-	-- The key e.g. "TYArmorCloth" -> frame "LootFilterTYArmorCloth"
+	-- Hidden DKD frame so backend matching code can find it by name
 	local hidden = CreateFrame("Frame", "LootFilter" .. key, parent, "LootFilterDKDOptionsTemplate")
 	hidden:Hide()
 
-	-- Subtype name (indented)
 	local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	label:SetPoint("LEFT", row, "LEFT", 4, 0)
 	label:SetText(displayName)
 
-	-- State button
-	local stateBtn = CreateFrame("Button", nil, row)
-	stateBtn:SetWidth(40)
-	stateBtn:SetHeight(16)
-	stateBtn:SetPoint("RIGHT", row, "RIGHT", -20, 0)
-	local stateBtnText = stateBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	stateBtnText:SetPoint("CENTER")
-	stateBtn.SetText = function(self, t) stateBtnText:SetText(t) end
-	row.stateBtn = stateBtn
+	local stateLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	stateLabel:SetPoint("RIGHT", row, "RIGHT", -20, 0)
+	stateLabel:SetText("|cff888888--|r")
+	row.stateLabel = stateLabel
 
-	-- Click state button to cycle
-	stateBtn:SetScript("OnClick", function()
-		cycleTriState(key, false)
-		updateTypeRowVisual(row)
-	end)
-	stateBtn:SetScript("OnEnter", function()
-		LootFilter.showTooltip(stateBtn, "LToolTip13")
-	end)
-	stateBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-	-- Hover on whole row also works
 	local hl = row:CreateTexture(nil, "HIGHLIGHT")
 	hl:SetAllPoints()
 	hl:SetTexture(1, 1, 1, 0.03)
 
-	updateTypeRowVisual(row)
+	row:SetScript("OnMouseUp", function()
+		cycleTriState(key, false)
+		updateTypeRowVisual(row)
+	end)
+	row:SetScript("OnEnter", function()
+		LootFilter.showTooltip(row, "LToolTip13")
+	end)
+	row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	-- Do NOT call updateTypeRowVisual here - deferred to initTypeTab()
+
 	return row
 end
+
+-- -------------------------------------------------------------------------
+-- Sidebar
+-- -------------------------------------------------------------------------
+
+local function createSidebar(parent)
+	local sidebar = createPanel(parent, "LootFilterSidebar", 120, 420)
+	sidebar:SetPoint("TOPLEFT", parent, "TOPLEFT", 16, -38)
+	sidebar:SetBackdropColor(0.08, 0.08, 0.08, 0.95)
+	sidebar:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+
+	-- Icon
+	local icon = sidebar:CreateTexture(nil, "ARTWORK")
+	icon:SetTexture("Interface\\AddOns\\LootFilter\\Images\\LFbutton")
+	icon:SetWidth(24)
+	icon:SetHeight(24)
+	icon:SetPoint("TOP", sidebar, "TOP", 0, -8)
+
+	-- Nav buttons
+	local startY = -40
+	for i, pageName in ipairs(PAGES) do
+		local btn = CreateFrame("Button", "LootFilterNav" .. pageName, sidebar, "GameMenuButtonTemplate")
+		btn:SetWidth(104)
+		btn:SetHeight(22)
+		btn:SetPoint("TOP", sidebar, "TOP", 0, startY - (i - 1) * 26)
+		btn:SetText(pageName)
+
+		-- Active indicator bar
+		local indicator = btn:CreateTexture(nil, "OVERLAY")
+		indicator:SetWidth(3)
+		indicator:SetPoint("TOPLEFT", btn, "TOPLEFT", 0, 0)
+		indicator:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
+		indicator:SetTexture(1, 0.82, 0, 1)
+		indicator:Hide()
+		btn.indicator = indicator
+
+		btn:SetScript("OnClick", function()
+			LootFilter.navigateTo(pageName)
+		end)
+
+		sidebarButtons[pageName] = btn
+	end
+
+	-- Close button at bottom
+	local closeBtn = CreateFrame("Button", "LootFilterCloseBottom", sidebar, "GameMenuButtonTemplate")
+	closeBtn:SetWidth(104)
+	closeBtn:SetHeight(22)
+	closeBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
+	closeBtn:SetText(LFINT_BTN_CLOSE or "Close")
+	closeBtn:SetScript("OnClick", function()
+		if LootFilter.REALMPLAYER ~= "" and LootFilterVars[LootFilter.REALMPLAYER] then
+			LootFilter.setNames()
+			LootFilter.setNamesDelete()
+			LootFilter.setItemValue()
+		end
+		safeHide()
+	end)
+
+	return sidebar
+end
+
+-- -------------------------------------------------------------------------
+-- Page: Filters
+-- -------------------------------------------------------------------------
 
 local function createFiltersPage(parent)
 	local page = CreateFrame("Frame", "LootFilterPageFilters", parent)
 	page:SetAllPoints()
 
-	-- Quality section
-	local qHeader = createSectionHeader(page, "Item Quality", nil, 10, -10)
+	local qHeader = createSectionHeader(page, "Item Quality", 10, -10)
 
-	-- Help text
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText:SetPoint("TOPLEFT", qHeader, "BOTTOMLEFT", 0, -4)
-	helpText:SetText("Click to cycle: Neutral > Keep > Delete")
+	helpText:SetText("Click to cycle: -- (neutral) > KEEP > DELETE")
 	helpText:SetTextColor(0.6, 0.6, 0.6)
 
-	-- Quality chips in a grid: 5 per row
 	local chipStartY = -42
 	for i, qi in ipairs(QUALITY_ORDER) do
 		local col = (i - 1) % 5
@@ -413,16 +389,14 @@ local function createFiltersPage(parent)
 		createQualityChip(page, qi, 10 + col * 66, chipStartY - row * 48)
 	end
 
-	-- Item Types section
-	local tHeader = createSectionHeader(page, "Item Types", nil, 10, -148)
+	local tHeader = createSectionHeader(page, "Item Types", 10, -148)
 
 	local helpText2 = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText2:SetPoint("TOPLEFT", tHeader, "BOTTOMLEFT", 0, -4)
-	helpText2:SetText("Click type name to expand subtypes. Click state to cycle.")
+	helpText2:SetText("Click type to expand. Click subtype to cycle state.")
 	helpText2:SetTextColor(0.6, 0.6, 0.6)
 
-	-- Scrollable type tree
-	local typePanel = createTooltipPanel(page, "LootFilterTypePanel", 555, 230)
+	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 230)
 	typePanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -184)
 
 	local typeScroll = CreateFrame("ScrollFrame", "LootFilterTypeScroll", typePanel, "UIPanelScrollFrameTemplate")
@@ -434,7 +408,7 @@ local function createFiltersPage(parent)
 	typeScrollChild:SetHeight(1)
 	typeScroll:SetScrollChild(typeScrollChild)
 
-	-- Also create the hidden type dropdown (referenced by events.lua init code)
+	-- Hidden type dropdown (referenced by dropdown init code)
 	local hiddenDropdown = CreateFrame("Button", "LootFilterSelectDropDownType", page, "UIDropDownMenuTemplate")
 	hiddenDropdown:Hide()
 
@@ -450,19 +424,19 @@ local function createNamesPage(parent)
 	page:SetAllPoints()
 	page:Hide()
 
-	local header = createSectionHeader(page, "Name Filters", nil, 10, -10)
+	local header = createSectionHeader(page, "Name Filters", 10, -10)
 
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -4)
 	helpText:SetText("Enter one name per line. Shift-click items in bags to add them.")
 	helpText:SetTextColor(0.6, 0.6, 0.6)
 
-	-- Keep column (left)
+	-- Keep column
 	local keepHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	keepHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 16, -40)
 	keepHeader:SetText("|cff33ff33Items to KEEP|r")
 
-	local keepPanel = createTooltipPanel(page, "LootFilterNameKeepPanel", 265, 340)
+	local keepPanel = createPanel(page, "LootFilterNameKeepPanel", 265, 340)
 	keepPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -56)
 	keepPanel:SetBackdropBorderColor(0.2, 0.7, 0.2, 0.8)
 
@@ -470,7 +444,7 @@ local function createNamesPage(parent)
 	keepScroll:SetPoint("TOPLEFT", keepPanel, "TOPLEFT", 8, -6)
 	keepScroll:SetPoint("BOTTOMRIGHT", keepPanel, "BOTTOMRIGHT", -26, 6)
 
-	local keepChild = CreateFrame("Frame", "LootFilterScrollChildFrame1", keepScroll, nil)
+	local keepChild = CreateFrame("Frame", "LootFilterScrollChildFrame1", keepScroll)
 	keepChild:SetWidth(230)
 	keepChild:SetHeight(340)
 	keepScroll:SetScrollChild(keepChild)
@@ -501,12 +475,12 @@ local function createNamesPage(parent)
 	keepChild:SetScript("OnMouseUp", function() keepEdit:SetFocus() end)
 	keepChild:EnableMouse(true)
 
-	-- Delete column (right)
+	-- Delete column
 	local delHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	delHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 292, -40)
 	delHeader:SetText("|cffff3333Items to DELETE|r")
 
-	local delPanel = createTooltipPanel(page, "LootFilterNameDelPanel", 265, 340)
+	local delPanel = createPanel(page, "LootFilterNameDelPanel", 265, 340)
 	delPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 286, -56)
 	delPanel:SetBackdropBorderColor(0.7, 0.2, 0.2, 0.8)
 
@@ -514,7 +488,7 @@ local function createNamesPage(parent)
 	delScroll:SetPoint("TOPLEFT", delPanel, "TOPLEFT", 8, -6)
 	delScroll:SetPoint("BOTTOMRIGHT", delPanel, "BOTTOMRIGHT", -26, 6)
 
-	local delChild = CreateFrame("Frame", "LootFilterScrollChildFrame2", delScroll, nil)
+	local delChild = CreateFrame("Frame", "LootFilterScrollChildFrame2", delScroll)
 	delChild:SetWidth(230)
 	delChild:SetHeight(340)
 	delScroll:SetScrollChild(delChild)
@@ -545,7 +519,7 @@ local function createNamesPage(parent)
 	delChild:SetScript("OnMouseUp", function() delEdit:SetFocus() end)
 	delChild:EnableMouse(true)
 
-	-- Bottom help text
+	-- Pattern help
 	local patternHelp = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	patternHelp:SetPoint("BOTTOMLEFT", page, "BOTTOMLEFT", 10, 6)
 	patternHelp:SetWidth(550)
@@ -561,7 +535,7 @@ end
 -- -------------------------------------------------------------------------
 
 local function createValueEditBox(parent, name, x, y, w)
-	local bg = createTooltipPanel(parent, name .. "BG", w + 10, 25)
+	local bg = createPanel(parent, name .. "BG", w + 10, 25)
 	bg:SetPoint("TOPLEFT", parent, "TOPLEFT", x - 5, y + 2)
 
 	local eb = CreateFrame("EditBox", name, parent)
@@ -583,7 +557,7 @@ local function createValuesPage(parent)
 	page:SetAllPoints()
 	page:Hide()
 
-	-- Need addon message (shown when no GetSellValue)
+	-- Need-addon message (shown when no GetSellValue)
 	local needAddon = page:CreateFontString("LootFilterNeedAddon", "OVERLAY", "GameFontNormal")
 	needAddon:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -50)
 	needAddon:SetWidth(540)
@@ -591,14 +565,13 @@ local function createValuesPage(parent)
 	needAddon:SetJustifyV("TOP")
 	needAddon:SetText(LFINT_TXT_INFORMANTNEED)
 
-	-- Value thresholds section (hidden until GetSellValue exists)
-	local vHeader = createSectionHeader(page, "Value Thresholds", nil, 10, -10)
+	-- Section header
+	createSectionHeader(page, "Value Thresholds", 10, -10)
 
-	-- Caching option
+	-- Caching
 	local cachingOpt = createCheckOption(page, "LootFilterOPCaching", 10, -36)
 	cachingOpt:Hide()
 
-	-- Free bag slots
 	local freeSlotsLabel = page:CreateFontString("LootFilterFreeSlotsText", "OVERLAY", "GameFontNormal")
 	freeSlotsLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 250, -36)
 	freeSlotsLabel:SetText(LFINT_TXT_NUMFREEBAGSLOTS)
@@ -607,12 +580,7 @@ local function createValuesPage(parent)
 	local freeSlots, freeSlotsBG = createValueEditBox(page, "LootFilterEditBox5", 450, -36, 40)
 	freeSlots:Hide()
 	freeSlotsBG:Hide()
-	-- Rename the BG so we can show/hide it
-	local tb5 = getglobal("LootFilterEditBox5BG")
-	if tb5 then
-		-- Create a global alias for backwards compat
-		LootFilterTextBackground5 = tb5
-	end
+	LootFilterTextBackground5 = freeSlotsBG
 
 	-- Delete threshold
 	local delValOpt = createCheckOption(page, "LootFilterOPValDelete", 10, -68)
@@ -621,8 +589,7 @@ local function createValuesPage(parent)
 	local delVal, delValBG = createValueEditBox(page, "LootFilterEditBox3", 250, -68, 40)
 	delVal:Hide()
 	delValBG:Hide()
-	LootFilterTextBackground3 = getglobal("LootFilterEditBox3BG")
-
+	LootFilterTextBackground3 = delValBG
 	delVal:SetScript("OnEnter", function() LootFilter.showTooltip(delVal, "LToolTip7") end)
 	delVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -633,12 +600,11 @@ local function createValuesPage(parent)
 	local keepVal, keepValBG = createValueEditBox(page, "LootFilterEditBox4", 250, -96, 40)
 	keepVal:Hide()
 	keepValBG:Hide()
-	LootFilterTextBackground4 = getglobal("LootFilterEditBox4BG")
-
+	LootFilterTextBackground4 = keepValBG
 	keepVal:SetScript("OnEnter", function() LootFilter.showTooltip(keepVal, "LToolTip8") end)
 	keepVal:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	-- No value option
+	-- No-value option
 	local noValOpt = createCheckOption(page, "LootFilterOPNoValue", 10, -124)
 	noValOpt:Hide()
 
@@ -651,16 +617,13 @@ local function createValuesPage(parent)
 	local calcDrop = CreateFrame("Button", "LootFilterSelectDropDownCalculate", page, "UIDropDownMenuTemplate")
 	calcDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 190, -148)
 	calcDrop:Hide()
-	calcDrop:SetScript("OnLoad", function() UIDropDownMenu_SetWidth(calcDrop, 150) end)
-	calcDrop:SetScript("OnEnter", function() LootFilter.showTooltip(calcDrop, "LToolTip12") end)
-	calcDrop:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	-- Market value option
+	-- Market value
 	local marketOpt = createCheckOption(page, "LootFilterOPMarketValue", 10, -180)
 	marketOpt:Hide()
 
-	-- Session statistics section
-	local sHeader = createSectionHeader(page, "Session Statistics", nil, 10, -210)
+	-- Session statistics
+	createSectionHeader(page, "Session Statistics", 10, -210)
 
 	local resetBtn = CreateFrame("Button", "LootFilterButtonReset", page, "GameMenuButtonTemplate")
 	resetBtn:SetWidth(70)
@@ -674,16 +637,16 @@ local function createValuesPage(parent)
 	resetBtn:Hide()
 
 	local infoY = -234
-	local sessionInfo = page:CreateFontString("LootFilterTextSessionValueInfo", "OVERLAY", "GameFontNormal")
-	sessionInfo:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY)
-	local sessionItems = page:CreateFontString("LootFilterTextSessionItemTotal", "OVERLAY", "GameFontNormal")
-	sessionItems:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 16)
-	local sessionTotal = page:CreateFontString("LootFilterTextSessionValueTotal", "OVERLAY", "GameFontNormal")
-	sessionTotal:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 32)
-	local sessionAvg = page:CreateFontString("LootFilterTextSessionValueAverage", "OVERLAY", "GameFontNormal")
-	sessionAvg:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 48)
-	local sessionHour = page:CreateFontString("LootFilterTextSessionValueHour", "OVERLAY", "GameFontNormal")
-	sessionHour:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 64)
+	local si = page:CreateFontString("LootFilterTextSessionValueInfo", "OVERLAY", "GameFontNormal")
+	si:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY)
+	local sit = page:CreateFontString("LootFilterTextSessionItemTotal", "OVERLAY", "GameFontNormal")
+	sit:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 16)
+	local svt = page:CreateFontString("LootFilterTextSessionValueTotal", "OVERLAY", "GameFontNormal")
+	svt:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 32)
+	local sva = page:CreateFontString("LootFilterTextSessionValueAverage", "OVERLAY", "GameFontNormal")
+	sva:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 48)
+	local svh = page:CreateFontString("LootFilterTextSessionValueHour", "OVERLAY", "GameFontNormal")
+	svh:SetPoint("TOPLEFT", page, "TOPLEFT", 14, infoY - 64)
 
 	page:SetScript("OnShow", function() LootFilter.sessionUpdateValues() end)
 
@@ -701,10 +664,10 @@ local function createCleanupPage(parent)
 	page:SetAllPoints()
 	page:Hide()
 
-	local header = createSectionHeader(page, "Bag Cleanup", nil, 10, -10)
+	createSectionHeader(page, "Bag Cleanup", 10, -10)
 
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	helpText:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -2)
+	helpText:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -28)
 	helpText:SetText("Items that don't match any keep rules. Shift-click to add to keep list.")
 	helpText:SetTextColor(0.6, 0.6, 0.6)
 
@@ -712,7 +675,7 @@ local function createCleanupPage(parent)
 	local deleteBtn = CreateFrame("Button", "LootFilterButtonDeleteItems", page, "GameMenuButtonTemplate")
 	deleteBtn:SetWidth(140)
 	deleteBtn:SetHeight(22)
-	deleteBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -42)
+	deleteBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -44)
 	deleteBtn:SetText(LFINT_BTN_DELETEITEMS)
 
 	local confirmBtn = CreateFrame("Button", "LootFilterButtonIWantTo", page, "GameMenuButtonTemplate")
@@ -733,22 +696,20 @@ local function createCleanupPage(parent)
 		end
 	end)
 
-	-- Vendor options (inline, right side of buttons)
-	local vendorOpt = createCheckOption(page, "LootFilterOPOpenVendor", 320, -42)
-	local autoSellOpt = createCheckOption(page, "LootFilterOPAutoSell", 320, -58)
+	-- Vendor options
+	createCheckOption(page, "LootFilterOPOpenVendor", 320, -44)
+	createCheckOption(page, "LootFilterOPAutoSell", 320, -60)
 
-	-- Clean list scroll
-	local cleanPanel = createTooltipPanel(page, "LootFilterTextBackgroundClean", 555, 310)
-	cleanPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -78)
+	-- Clean list
+	local cleanPanel = createPanel(page, "LootFilterTextBackgroundClean", 555, 300)
+	cleanPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -80)
 
 	local cleanScroll = CreateFrame("ScrollFrame", "LootFilterScrollFrameClean", cleanPanel, "FauxScrollFrameTemplate")
 	cleanScroll:SetPoint("TOPLEFT", cleanPanel, "TOPLEFT", 8, -6)
 	cleanScroll:SetPoint("BOTTOMRIGHT", cleanPanel, "BOTTOMRIGHT", -26, 6)
 
-	-- Create the 19 font string lines and hit frames
 	for i = 1, CLEAN_LINES do
 		local yOff = -((i - 1) * 16)
-
 		local fs = cleanScroll:CreateFontString("cleanLine" .. i, "OVERLAY", "GameFontNormal")
 		fs:SetPoint("TOPLEFT", cleanScroll, "TOPLEFT", 2, yOff - 2)
 		fs:SetText("")
@@ -768,7 +729,6 @@ local function createCleanupPage(parent)
 		LootFilter.processCleaning()
 	end)
 
-	-- Total value text
 	local totalVal = page:CreateFontString("LootFilterTextCleanTotalValue", "OVERLAY", "GameFontNormal")
 	totalVal:SetPoint("BOTTOMLEFT", page, "BOTTOMLEFT", 14, 6)
 
@@ -776,7 +736,7 @@ local function createCleanupPage(parent)
 		LootFilter.constructCleanList()
 	end)
 
-	-- Alias for events.lua reference
+	-- Global alias for events.lua
 	LootFilterFrameClean = page
 
 	return page
@@ -791,81 +751,74 @@ local function createSettingsPage(parent)
 	page:SetAllPoints()
 	page:Hide()
 
-	-- General section
-	local gHeader = createSectionHeader(page, "General", nil, 10, -10)
-
+	-- General
+	createSectionHeader(page, "General", 10, -10)
 	createCheckOption(page, "LootFilterOPEnable", 14, -32)
 	createCheckOption(page, "LootFilterOPLootBot", 14, -50)
 	createCheckOption(page, "LootFilterOPTooltips", 14, -68)
 	createCheckOption(page, "LootFilterOPConfirmDelete", 14, -86)
 
-	-- Notifications section
-	local nHeader = createSectionHeader(page, "Notifications", nil, 10, -112)
-
+	-- Notifications
+	createSectionHeader(page, "Notifications", 10, -112)
 	createCheckOption(page, "LootFilterOPNotifyDelete", 14, -134)
 	createCheckOption(page, "LootFilterOPNotifyKeep", 270, -134)
 	createCheckOption(page, "LootFilterOPNotifyNoMatch", 14, -152)
 	createCheckOption(page, "LootFilterOPNotifyOpen", 270, -152)
 	createCheckOption(page, "LootFilterOPNotifyNew", 14, -170)
 
-	-- Bags section
-	local bHeader = createSectionHeader(page, "Monitored Bags", nil, 10, -196)
+	-- Bags
+	createSectionHeader(page, "Monitored Bags", 10, -196)
 
 	local helpBags = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	helpBags:SetPoint("TOPLEFT", bHeader, "BOTTOMLEFT", 0, -4)
+	helpBags:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -214)
 	helpBags:SetText("Select which bags Loot Filter should scan.")
 	helpBags:SetTextColor(0.6, 0.6, 0.6)
 
-	createCheckOption(page, "LootFilterOPBag0", 14, -228)
-	createCheckOption(page, "LootFilterOPBag1", 120, -228)
-	createCheckOption(page, "LootFilterOPBag2", 200, -228)
-	createCheckOption(page, "LootFilterOPBag3", 280, -228)
-	createCheckOption(page, "LootFilterOPBag4", 360, -228)
+	createCheckOption(page, "LootFilterOPBag0", 14, -232)
+	createCheckOption(page, "LootFilterOPBag1", 120, -232)
+	createCheckOption(page, "LootFilterOPBag2", 200, -232)
+	createCheckOption(page, "LootFilterOPBag3", 280, -232)
+	createCheckOption(page, "LootFilterOPBag4", 360, -232)
 
-	-- Copy section
-	local cHeader = createSectionHeader(page, "Character Settings", nil, 10, -256)
+	-- Character copy
+	createSectionHeader(page, "Character Settings", 10, -260)
 
 	local copyLabel = page:CreateFontString("LootFilterEditBoxTitleCopy3", "OVERLAY", "GameFontNormal")
-	copyLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -278)
+	copyLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -282)
 	copyLabel:SetText(LFINT_TXT_SELECTCHARCOPY)
 
 	local copyDrop = CreateFrame("Button", "LootFilterSelectDropDown", page, "UIDropDownMenuTemplate")
-	copyDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -294)
-	copyDrop:SetScript("OnLoad", function()
-		UIDropDownMenu_Initialize(copyDrop, LootFilter.SelectDropDown_Initialize)
-		UIDropDownMenu_SetWidth(copyDrop, 250)
-	end)
+	copyDrop:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -298)
 
 	local copyBtn = CreateFrame("Button", "LootFilterButtonRealCopy", page, "GameMenuButtonTemplate")
 	copyBtn:SetWidth(110)
 	copyBtn:SetHeight(22)
-	copyBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 350, -298)
+	copyBtn:SetPoint("TOPLEFT", page, "TOPLEFT", 350, -302)
 	copyBtn:SetText(LFINT_BTN_COPYSETTINGS)
 	copyBtn:SetScript("OnClick", function() LootFilter.copySettings() end)
 	copyBtn:SetScript("OnShow", function()
-		LootFilterEditBoxTitleCopy4:Hide()
-		LootFilterEditBoxTitleCopy5:Hide()
+		if LootFilterEditBoxTitleCopy4 then LootFilterEditBoxTitleCopy4:Hide() end
+		if LootFilterEditBoxTitleCopy5 then LootFilterEditBoxTitleCopy5:Hide() end
 	end)
 
-	local delBtn = CreateFrame("Button", "LootFilterButtonRealDelete", page, "GameMenuButtonTemplate")
-	delBtn:SetWidth(110)
-	delBtn:SetHeight(22)
-	delBtn:SetPoint("TOPLEFT", copyBtn, "BOTTOMLEFT", 0, -4)
-	delBtn:SetText(LFINT_BTN_DELETESETTINGS)
-	delBtn:SetScript("OnClick", function() LootFilter.deleteSettings() end)
-	delBtn:SetScript("OnShow", function()
-		LootFilterEditBoxTitleCopy4:Hide()
-		LootFilterEditBoxTitleCopy5:Hide()
+	local delSettingsBtn = CreateFrame("Button", "LootFilterButtonRealDelete", page, "GameMenuButtonTemplate")
+	delSettingsBtn:SetWidth(110)
+	delSettingsBtn:SetHeight(22)
+	delSettingsBtn:SetPoint("TOPLEFT", copyBtn, "BOTTOMLEFT", 0, -4)
+	delSettingsBtn:SetText(LFINT_BTN_DELETESETTINGS)
+	delSettingsBtn:SetScript("OnClick", function() LootFilter.deleteSettings() end)
+	delSettingsBtn:SetScript("OnShow", function()
+		if LootFilterEditBoxTitleCopy4 then LootFilterEditBoxTitleCopy4:Hide() end
+		if LootFilterEditBoxTitleCopy5 then LootFilterEditBoxTitleCopy5:Hide() end
 	end)
 
-	-- Status messages
 	local copySuccess = page:CreateFontString("LootFilterEditBoxTitleCopy4", "OVERLAY", "GameFontNormal")
-	copySuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -340)
+	copySuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -344)
 	copySuccess:SetText(LFINT_TXT_COPYSUCCESS)
 	copySuccess:Hide()
 
 	local delSuccess = page:CreateFontString("LootFilterEditBoxTitleCopy5", "OVERLAY", "GameFontNormal")
-	delSuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -340)
+	delSuccess:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -344)
 	delSuccess:SetText(LFINT_TXT_DELETESUCCESS)
 	delSuccess:Hide()
 
@@ -877,28 +830,33 @@ end
 -- -------------------------------------------------------------------------
 
 function LootFilter.navigateTo(pageName)
-	LootFilter.setNames()
-	LootFilter.setNamesDelete()
+	-- Save any pending text edits
+	if LootFilter.REALMPLAYER ~= "" and LootFilterVars[LootFilter.REALMPLAYER] then
+		LootFilter.setNames()
+		LootFilter.setNamesDelete()
+	end
 
-	-- Hide all pages, deselect all sidebar buttons
+	-- Hide all pages, deselect all nav buttons
 	for _, name in ipairs(PAGES) do
 		if pageFrames[name] then pageFrames[name]:Hide() end
 		if sidebarButtons[name] then
-			sidebarButtons[name].hlTex:Hide()
-			sidebarButtons[name].indicator:Hide()
-			sidebarButtons[name].label:SetTextColor(0.8, 0.8, 0.8)
+			sidebarButtons[name]:UnlockHighlight()
+			if sidebarButtons[name].indicator then
+				sidebarButtons[name].indicator:Hide()
+			end
 		end
 	end
 
 	-- Show selected page
 	if pageFrames[pageName] then pageFrames[pageName]:Show() end
 	if sidebarButtons[pageName] then
-		sidebarButtons[pageName].hlTex:Show()
-		sidebarButtons[pageName].indicator:Show()
-		sidebarButtons[pageName].label:SetTextColor(1, 0.82, 0)
+		sidebarButtons[pageName]:LockHighlight()
+		if sidebarButtons[pageName].indicator then
+			sidebarButtons[pageName].indicator:Show()
+		end
 	end
 
-	-- Special actions per page
+	-- Page-specific actions
 	if pageName == "Values" then
 		LootFilter.checkDependencies()
 	elseif pageName == "Settings" then
@@ -908,62 +866,66 @@ function LootFilter.navigateTo(pageName)
 	LootFilter.currentPage = pageName
 end
 
--- Backwards compat: selectButton is called from events.lua for merchant auto-open
+-- Backward compat: events.lua calls selectButton(LootFilterButtonClean, LootFilterFrameClean)
 function LootFilter.selectButton(button, frame)
-	-- If frame is the cleanup page, navigate there
 	if frame == LootFilterFrameClean then
 		LootFilter.navigateTo("Cleanup")
-	elseif frame == LootFilterFrameGeneral then
-		LootFilter.navigateTo("Settings")
 	else
-		-- Default to filters
 		LootFilter.navigateTo("Filters")
 	end
 end
 
 -- -------------------------------------------------------------------------
--- Build the complete UI (called once from LootFilter.xml OnLoad)
+-- Build UI (called once from LootFilter.xml OnLoad)
 -- -------------------------------------------------------------------------
 
 function LootFilter.buildUI()
 	local main = LootFilterOptions
+
+	-- Close X button at top-right
+	local closeX = CreateFrame("Button", "LootFilterCloseX", main, "UIPanelCloseButton")
+	closeX:SetPoint("TOPRIGHT", main, "TOPRIGHT", -4, -4)
+	closeX:SetScript("OnClick", function()
+		if LootFilter.REALMPLAYER ~= "" and LootFilterVars[LootFilter.REALMPLAYER] then
+			LootFilter.setNames()
+			LootFilter.setNamesDelete()
+			LootFilter.setItemValue()
+		end
+		safeHide()
+	end)
 
 	-- Content area (right of sidebar)
 	local content = CreateFrame("Frame", "LootFilterContent", main)
 	content:SetPoint("TOPLEFT", main, "TOPLEFT", 144, -38)
 	content:SetPoint("BOTTOMRIGHT", main, "BOTTOMRIGHT", -16, 16)
 
-	-- Create sidebar
+	-- Sidebar
 	createSidebar(main)
 
-	-- Create pages
+	-- Pages (NO data access during creation - just frame structure)
 	pageFrames["Filters"]  = createFiltersPage(content)
 	pageFrames["Names"]    = createNamesPage(content)
 	pageFrames["Values"]   = createValuesPage(content)
 	pageFrames["Cleanup"]  = createCleanupPage(content)
 	pageFrames["Settings"] = createSettingsPage(content)
 
-	-- Set up backwards-compat globals for frames referenced by other code
-	-- LootFilterFrameClean is set in createCleanupPage
+	-- Global aliases for backward compat
 	LootFilterFrameGeneral = pageFrames["Settings"]
-
-	-- These frame aliases are needed for events.lua: selectButton(LootFilterButtonClean, LootFilterFrameClean)
 	LootFilterButtonClean = sidebarButtons["Cleanup"]
 	LootFilterButtonGeneral = sidebarButtons["Settings"]
 
 	-- Set title
 	LootFilter.setTitle()
 
-	-- Select default page
-	LootFilter.navigateTo("Filters")
+	-- Do NOT call navigateTo here - REALMPLAYER is not set yet.
+	-- It will be called from ADDON_LOADED in events.lua.
 end
 
 -- -------------------------------------------------------------------------
--- Init functions called from ADDON_LOADED
+-- Init functions (called from ADDON_LOADED after SavedVariables are ready)
 -- -------------------------------------------------------------------------
 
 function LootFilter.initQualityTab()
-	-- Refresh all quality chip visuals from saved variables
 	for _, qi in ipairs(QUALITY_ORDER) do
 		local chip = qualityChips[qi.key]
 		if chip then
@@ -973,22 +935,22 @@ function LootFilter.initQualityTab()
 end
 
 function LootFilter.initTypeTab()
-	-- Build the type tree rows
 	typeRows = {}
 
 	for _, typeName in LootFilter.sortedPairs(LootFilter.Locale.types) do
 		local headerRow = createTypeHeaderRow(typeScrollChild, typeName, typeName)
 		table.insert(typeRows, headerRow)
 
-		-- Also create the hidden parent frame for this type (for backend compat)
+		-- Hidden parent frame for backend compat
 		local hiddenParent = CreateFrame("Frame", "LootFilterDKDType" .. typeName, LootFilterPageFilters)
 		hiddenParent:Hide()
 
-		-- Find subtypes
 		for key, displayName in LootFilter.sortedPairs(LootFilter.Locale.radioButtonsText) do
 			if string.match(key, "^TY" .. typeName) then
 				local subRow = createTypeSubRow(typeScrollChild, key, displayName, typeName)
 				table.insert(typeRows, subRow)
+				-- Now safe to update visual since SavedVars are loaded
+				updateTypeRowVisual(subRow)
 			end
 		end
 	end
@@ -997,10 +959,11 @@ function LootFilter.initTypeTab()
 end
 
 -- -------------------------------------------------------------------------
--- Original UI functions (kept for backward compatibility)
+-- Original UI functions (backward compat with other files)
 -- -------------------------------------------------------------------------
 
 function LootFilter.getNames()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local result = ""
 	table.sort(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"])
 	for key, value in ipairs(LootFilterVars[LootFilter.REALMPLAYER].keepList["names"]) do
@@ -1010,6 +973,7 @@ function LootFilter.getNames()
 end
 
 function LootFilter.getNamesDelete()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local result = ""
 	table.sort(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"])
 	for key, value in ipairs(LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"]) do
@@ -1019,6 +983,7 @@ function LootFilter.getNamesDelete()
 end
 
 function LootFilter.setNames()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	LootFilterVars[LootFilter.REALMPLAYER].keepList["names"] = {}
 	local result = LootFilterEditBox1:GetText() .. "\n"
 	if result ~= nil then
@@ -1033,6 +998,7 @@ function LootFilter.setNames()
 end
 
 function LootFilter.setNamesDelete()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	LootFilterVars[LootFilter.REALMPLAYER].deleteList["names"] = {}
 	local result = LootFilterEditBox2:GetText() .. "\n"
 	if result ~= nil then
@@ -1047,6 +1013,7 @@ function LootFilter.setNamesDelete()
 end
 
 function LootFilter.showTooltip(area, text)
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	if LootFilterVars[LootFilter.REALMPLAYER].tooltips then
 		GameTooltip:SetOwner(LootFilterOptions, "ANCHOR_TOPRIGHT")
 		GameTooltip:SetText(LootFilter.Locale.LocTooltip[text], 1, 1, 1, 0.75, 1)
@@ -1056,6 +1023,7 @@ end
 
 function LootFilter.setRadioButtonsValue(button)
 	local name = LootFilter.trim(button:GetParent():GetName())
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	if LootFilterVars[LootFilter.REALMPLAYER].keepList[name] ~= nil then
 		LootFilterVars[LootFilter.REALMPLAYER].keepList[name] = nil
 	end
@@ -1093,6 +1061,7 @@ function LootFilter.setRadioButtonsValue(button)
 end
 
 function LootFilter.getRadioButtonsValue(button)
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local name = LootFilter.trim(button:GetName())
 	local fontString = getglobal(button:GetName() .. "_Text")
 	local radioButton = getglobal(button:GetName() .. "_Default")
@@ -1111,6 +1080,7 @@ end
 
 function LootFilter.setRadioButtonValue(button)
 	local name = LootFilter.trim(button:GetParent():GetName())
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local checked = false
 	if button:GetChecked() then
 		checked = true
@@ -1177,6 +1147,7 @@ function LootFilter.setRadioButtonValue(button)
 end
 
 function LootFilter.getRadioButtonValue(button)
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local name = LootFilter.trim(button:GetName())
 	local fontString = getglobal(button:GetName() .. "_Text")
 	local radioButton = getglobal(button:GetName() .. "_Button")
@@ -1227,6 +1198,7 @@ function LootFilter.getRadioButtonValue(button)
 end
 
 function LootFilter.setItemValue()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local value = tonumber(LootFilterEditBox3:GetText())
 	if value == nil then value = 0 end
 	LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"] = value
@@ -1241,6 +1213,7 @@ function LootFilter.setItemValue()
 end
 
 function LootFilter.getItemValue()
+	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then return end
 	local value = ""
 	if LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"] ~= nil and LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"] ~= "" then
 		value = LootFilterVars[LootFilter.REALMPLAYER].deleteList["VAValue"]
@@ -1296,17 +1269,14 @@ function LootFilter.setTitle()
 end
 
 function LootFilter.CleanScrollBar_Update()
-	local line
-	local cleanLine
-	local lineplusoffset
 	local numitems = table.getn(LootFilter.cleanList)
 	if numitems < 20 then
 		numitems = 20
 	end
 	FauxScrollFrame_Update(LootFilterScrollFrameClean, numitems, CLEAN_LINES, 16)
 	for line = 1, CLEAN_LINES do
-		lineplusoffset = line + FauxScrollFrame_GetOffset(LootFilterScrollFrameClean)
-		cleanLine = getglobal("cleanLine" .. line)
+		local lineplusoffset = line + FauxScrollFrame_GetOffset(LootFilterScrollFrameClean)
+		local cleanLine = getglobal("cleanLine" .. line)
 		if lineplusoffset <= table.getn(LootFilter.cleanList) then
 			cleanLine:SetText(LootFilter.cleanList[lineplusoffset]["link"])
 			cleanLine:Show()
@@ -1404,9 +1374,7 @@ function LootFilter.SelectDropDownCalculate_Initialize()
 end
 
 function LootFilter.checkDependencies()
-	if LootFilter.REALMPLAYER == "" or LootFilterVars[LootFilter.REALMPLAYER] == nil then
-		return
-	end
+	if LootFilter.REALMPLAYER == "" or LootFilterVars[LootFilter.REALMPLAYER] == nil then return end
 	if GetSellValue ~= nil then
 		LootFilterOPCaching:Show()
 		if LootFilterVars[LootFilter.REALMPLAYER].caching then
@@ -1424,7 +1392,6 @@ function LootFilter.checkDependencies()
 		LootFilterSelectDropDownCalculate:Show()
 		LootFilterSizeToCalculate:Show()
 		LootFilterButtonReset:Show()
-
 		LootFilterNeedAddon:Hide()
 		if (AucAdvanced) and (AucAdvanced.API) and (AucAdvanced.API.GetMarketValue) then
 			LootFilterOPMarketValue:Show()
@@ -1448,9 +1415,7 @@ function LootFilter.sortedPairs(t, comparator)
 	local function _f(_s, _v)
 		i = i + 1
 		local k = sortedKeys[i]
-		if k then
-			return k, t[k]
-		end
+		if k then return k, t[k] end
 	end
 	return _f, nil, nil
 end
