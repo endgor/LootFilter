@@ -507,15 +507,15 @@ local function createNamesPage(parent)
 	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -4)
 	helpText:SetText("Enter one name per line. Shift-click items in bags to add them.")
-	helpText:SetTextColor(0.6, 0.6, 0.6)
+	helpText:SetTextColor(1, 1, 1)
 
 	-- Keep column
 	local keepHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	keepHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 16, -40)
+	keepHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 16, -36)
 	keepHeader:SetText("|cff33ff33Items to KEEP|r")
 
-	local keepPanel = createPanel(page, "LootFilterNameKeepPanel", 265, 340)
-	keepPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -56)
+	local keepPanel = createPanel(page, "LootFilterNameKeepPanel", 265, 348)
+	keepPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 10, -50)
 	keepPanel:SetBackdropBorderColor(0.2, 0.7, 0.2, 0.8)
 
 	local keepScroll = CreateFrame("ScrollFrame", "LootFilterScrollFrame1", keepPanel, "UIPanelScrollFrameTemplate")
@@ -556,11 +556,11 @@ local function createNamesPage(parent)
 
 	-- Delete column
 	local delHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	delHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 292, -40)
+	delHeader:SetPoint("TOPLEFT", page, "TOPLEFT", 292, -36)
 	delHeader:SetText("|cffff3333Items to DELETE|r")
 
-	local delPanel = createPanel(page, "LootFilterNameDelPanel", 265, 340)
-	delPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 286, -56)
+	local delPanel = createPanel(page, "LootFilterNameDelPanel", 265, 348)
+	delPanel:SetPoint("TOPLEFT", page, "TOPLEFT", 286, -50)
 	delPanel:SetBackdropBorderColor(0.7, 0.2, 0.2, 0.8)
 
 	local delScroll = CreateFrame("ScrollFrame", "LootFilterScrollFrame2", delPanel, "UIPanelScrollFrameTemplate")
@@ -604,8 +604,8 @@ local function createNamesPage(parent)
 	patternHelp:SetPoint("BOTTOMLEFT", page, "BOTTOMLEFT", 10, 6)
 	patternHelp:SetWidth(550)
 	patternHelp:SetJustifyH("LEFT")
-	patternHelp:SetText("|cffaaaaaaExact:|r Hearthstone   |cffaaaaaa*:|r *Beast*   |cffaaaaaa#:|r #pattern   |cffaaaaaa##:|r ##tooltip   |cffaaaaaaComment:|r name ; note|r")
-	patternHelp:SetTextColor(0.5, 0.5, 0.5)
+	patternHelp:SetText("|cffffffffExact:|r Hearthstone   |cffffffff*:|r *Beast*   |cffffffff#:|r #pattern   |cffffffff##:|r ##tooltip   |cffffffffComment:|r name ; note|r")
+	patternHelp:SetTextColor(1, 1, 1)
 
 	return page
 end
