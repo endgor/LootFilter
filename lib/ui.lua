@@ -123,75 +123,72 @@ local function cycleTriState(key, isQuality)
 end
 
 -- -------------------------------------------------------------------------
--- Quality chips
+-- Quality checkboxes
 -- -------------------------------------------------------------------------
 
-local qualityChips = {}
+local qualityRows = {}
 
-local function updateChipVisual(chip)
-	local state = getTriState(chip.qualKey)
-	local c = QUALITY_COLORS[chip.qualVal] or QUALITY_COLORS[0]
-
-	if state == "keep" then
-		chip.stateText:SetText("KEEP")
-		chip.stateText:SetTextColor(0.2, 1.0, 0.2)
-		chip:SetBackdropBorderColor(0.2, 0.9, 0.2, 1)
-	elseif state == "delete" then
-		chip.stateText:SetText("DELETE")
-		chip.stateText:SetTextColor(1.0, 0.2, 0.2)
-		chip:SetBackdropBorderColor(0.9, 0.2, 0.2, 1)
-	else
-		chip.stateText:SetText("--")
-		chip.stateText:SetTextColor(0.5, 0.5, 0.5)
-		chip:SetBackdropBorderColor(c.r * 0.5, c.g * 0.5, c.b * 0.5, 0.6)
-	end
+local function updateQualityRowVisual(row)
+	local state = getTriState(row.qualKey)
+	row.keepCB:SetChecked(state == "keep")
+	row.delCB:SetChecked(state == "delete")
 end
 
-local function createQualityChip(parent, qi, x, y)
-	local chip = CreateFrame("Frame", "LootFilterQChip" .. qi.key, parent)
-	chip:SetWidth(76)
-	chip:SetHeight(42)
-	chip:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
-	chip:EnableMouse(true)
+local function createQualityRow(parent, qi, y)
+	local row = CreateFrame("Frame", "LootFilterQRow" .. qi.key, parent)
+	row:SetWidth(250)
+	row:SetHeight(15)
+	row:SetPoint("TOPLEFT", parent, "TOPLEFT", 10, y)
+	row:EnableMouse(true)
 
-	chip:SetBackdrop({
-		bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = true, tileSize = 16, edgeSize = 12,
-		insets = { left = 2, right = 2, top = 2, bottom = 2 },
-	})
+	local hl = row:CreateTexture(nil, "HIGHLIGHT")
+	hl:SetAllPoints()
+	hl:SetTexture(1, 1, 1, 0.06)
 
 	local c = QUALITY_COLORS[qi.val] or QUALITY_COLORS[0]
-	chip:SetBackdropColor(c.r * 0.25, c.g * 0.25, c.b * 0.25, 0.9)
-
-	local nameText = chip:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	nameText:SetPoint("TOP", chip, "TOP", 0, -5)
+	local nameText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	nameText:SetPoint("LEFT", row, "LEFT", 0, 0)
 	nameText:SetText(qi.name)
 	nameText:SetTextColor(c.r, c.g, c.b)
 
-	local stateText = chip:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	stateText:SetPoint("BOTTOM", chip, "BOTTOM", 0, 5)
-	stateText:SetText("--")
-	stateText:SetTextColor(0.5, 0.5, 0.5)
-	chip.stateText = stateText
+	local keepCB = CreateFrame("CheckButton", "LootFilterQKeep" .. qi.key, row, "LootFilterCheckboxTemplate")
+	keepCB:SetPoint("LEFT", row, "LEFT", 160, 0)
 
-	chip.qualKey = qi.key
-	chip.qualVal = qi.val
+	local delCB = CreateFrame("CheckButton", "LootFilterQDel" .. qi.key, row, "LootFilterCheckboxTemplate")
+	delCB:SetPoint("LEFT", row, "LEFT", 210, 0)
 
-	chip:SetScript("OnMouseUp", function()
-		cycleTriState(qi.key, true)
-		updateChipVisual(chip)
+	keepCB:SetScript("OnClick", function()
+		if keepCB:GetChecked() then
+			delCB:SetChecked(false)
+			setTriState(qi.key, "keep", true)
+		else
+			setTriState(qi.key, "neutral", true)
+		end
 	end)
-	chip:SetScript("OnEnter", function()
-		LootFilter.showTooltip(chip, "LToolTip13")
-	end)
-	chip:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-	-- Do NOT call updateChipVisual here - SavedVars may not be loaded yet.
+	delCB:SetScript("OnClick", function()
+		if delCB:GetChecked() then
+			keepCB:SetChecked(false)
+			setTriState(qi.key, "delete", true)
+		else
+			setTriState(qi.key, "neutral", true)
+		end
+	end)
+
+	row.qualKey = qi.key
+	row.keepCB = keepCB
+	row.delCB = delCB
+
+	row:SetScript("OnEnter", function()
+		LootFilter.showTooltip(row, "LToolTip13")
+	end)
+	row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	-- Do NOT call updateQualityRowVisual here - SavedVars may not be loaded yet.
 	-- It will be called from initQualityTab() after ADDON_LOADED.
 
-	qualityChips[qi.key] = chip
-	return chip
+	qualityRows[qi.key] = row
+	return row
 end
 
 -- -------------------------------------------------------------------------
@@ -553,19 +550,21 @@ local function createFiltersPage(parent)
 
 	local qHeader = createSectionHeader(page, "Item Quality", 10, -10)
 
-	local helpText = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	helpText:SetPoint("TOPLEFT", qHeader, "BOTTOMLEFT", 0, -4)
-	helpText:SetText("Click to cycle: -- (neutral) > KEEP > DELETE")
-	helpText:SetTextColor(1, 1, 1)
+	local keepLabel = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	keepLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 170, -28)
+	keepLabel:SetText("Keep")
+	keepLabel:SetTextColor(0.2, 1.0, 0.2)
 
-	local chipStartY = -42
+	local delLabel = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	delLabel:SetPoint("TOPLEFT", page, "TOPLEFT", 220, -28)
+	delLabel:SetText("Del")
+	delLabel:SetTextColor(1.0, 0.2, 0.2)
+
 	for i, qi in ipairs(QUALITY_ORDER) do
-		local col = (i - 1) % 5
-		local row = math.floor((i - 1) / 5)
-		createQualityChip(page, qi, 10 + col * 82, chipStartY - row * 48)
+		createQualityRow(page, qi, -42 - (i - 1) * 15)
 	end
 
-	local tHeader = createSectionHeader(page, "Item Types", 10, -148)
+	local tHeader = createSectionHeader(page, "Item Types", 10, -184)
 
 	local helpText2 = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	helpText2:SetPoint("TOPLEFT", tHeader, "BOTTOMLEFT", 0, -4)
@@ -574,12 +573,12 @@ local function createFiltersPage(parent)
 
 	-- Search box
 	local searchBG = createPanel(page, nil, 200, 22)
-	searchBG:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -182)
+	searchBG:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -218)
 
 	local searchBox = CreateFrame("EditBox", "LootFilterTypeSearch", page)
 	searchBox:SetWidth(188)
 	searchBox:SetHeight(18)
-	searchBox:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -184)
+	searchBox:SetPoint("TOPLEFT", page, "TOPLEFT", 14, -220)
 	searchBox:SetAutoFocus(false)
 	searchBox:SetFontObject(ChatFontNormal)
 
@@ -680,8 +679,8 @@ local function createFiltersPage(parent)
 		end
 	end)
 
-	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 206)
-	typePanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -208)
+	local typePanel = createPanel(page, "LootFilterTypePanel", 555, 200)
+	typePanel:SetPoint("TOPLEFT", page, "TOPLEFT", 8, -244)
 
 	local typeScroll = CreateFrame("ScrollFrame", "LootFilterTypeScroll", typePanel, "UIPanelScrollFrameTemplate")
 	typeScroll:SetPoint("TOPLEFT", typePanel, "TOPLEFT", 6, -6)
@@ -738,16 +737,6 @@ local function createNamesPage(parent)
 	keepEdit:SetMaxLetters(7500)
 	keepEdit:SetFontObject(ChatFontNormal)
 	keepEdit:SetScript("OnShow", function() LootFilter.getNames() end)
-	keepEdit:SetScript("OnTextChanged", function()
-		local scrollBar = getglobal("LootFilterScrollFrame1ScrollBar")
-		keepScroll:UpdateScrollChildRect()
-		if not keepEdit:HasFocus() then return end
-		local mn, mx = scrollBar:GetMinMaxValues()
-		if mx > 0 and (keepEdit.max ~= mx) then
-			keepEdit.max = mx
-			scrollBar:SetValue(mx)
-		end
-	end)
 	keepEdit:SetScript("OnEscapePressed", function() LootFilter.updateFocus(1, false) end)
 	keepEdit:SetScript("OnEditFocusGained", function() LootFilter.updateFocus(1, true) end)
 	keepEdit:SetScript("OnEditFocusLost", function() LootFilter.setNames() end)
@@ -783,16 +772,6 @@ local function createNamesPage(parent)
 	delEdit:SetMaxLetters(7500)
 	delEdit:SetFontObject(ChatFontNormal)
 	delEdit:SetScript("OnShow", function() LootFilter.getNamesDelete() end)
-	delEdit:SetScript("OnTextChanged", function()
-		local scrollBar = getglobal("LootFilterScrollFrame2ScrollBar")
-		delScroll:UpdateScrollChildRect()
-		if not delEdit:HasFocus() then return end
-		local mn, mx = scrollBar:GetMinMaxValues()
-		if mx > 0 and (delEdit.max ~= mx) then
-			delEdit.max = mx
-			scrollBar:SetValue(mx)
-		end
-	end)
 	delEdit:SetScript("OnEscapePressed", function() LootFilter.updateFocus(2, false) end)
 	delEdit:SetScript("OnEditFocusGained", function() LootFilter.updateFocus(2, true) end)
 	delEdit:SetScript("OnEditFocusLost", function() LootFilter.setNamesDelete() end)
@@ -1255,9 +1234,9 @@ end
 
 function LootFilter.initQualityTab()
 	for _, qi in ipairs(QUALITY_ORDER) do
-		local chip = qualityChips[qi.key]
-		if chip then
-			updateChipVisual(chip)
+		local row = qualityRows[qi.key]
+		if row then
+			updateQualityRowVisual(row)
 		end
 	end
 end
@@ -1284,7 +1263,7 @@ function LootFilter.initTypeTab()
 end
 
 function LootFilter.refreshUI()
-	-- Refresh quality chips
+	-- Refresh quality checkboxes
 	LootFilter.initQualityTab()
 	-- Refresh type row visuals
 	for _, row in ipairs(typeRows) do
