@@ -1,8 +1,3 @@
-function LootFilter.sortByLink(a, b)
-	if ( not a ) then return true;	elseif ( not b ) then return false; end
-	return string.lower(a["name"]) < string.lower(b["name"]);
-end;
-
 function LootFilter.processCleaning()
 	LootFilterButtonDeleteItems:Disable();
 	LootFilterButtonIWantTo:Disable();

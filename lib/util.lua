@@ -15,23 +15,6 @@ function LootFilter.debug(value)
 	DEFAULT_CHAT_FRAME:AddMessage("Loot Filter - DEBUG: " .. value, 1.0, 1.0, 1.0);
 end;
 
-function LootFilter.report(value)
-	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then
-		return;
-	end
-	if (LootFilterVars[LootFilter.REALMPLAYER].report) then
-		LootFilter.print(value);
-	end;
-end;
-
-function LootFilter.tcount(table)
-	local n = 0;
-	for _ in pairs(table) do
-		n = n + 1;
-	end
-	return n;
-end;
-
 function LootFilter.varCount()
 	local n = 0;
 	for k in pairs(LootFilterVars) do
@@ -45,22 +28,6 @@ end
 function LootFilter.trim(name)
 	return string.gsub(name, "LootFilter", "");
 end;
-
-function LootFilter.split(str, at)
-	if (not (type(str) == "string")) then
-		return
-	end
-
-	if (not str) then
-		str = ""
-	end
-
-	if (not at) then
-		return { str }
-	else
-		return { strsplit(at, str) };
-	end
-end
 
 function LootFilter.stripComment(searchName)
 	local comment = "";

@@ -42,9 +42,6 @@ function LootFilter.processItemStack()
 				if (LootFilterVars[LootFilter.REALMPLAYER].notifydelete) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
 					LootFilter.print(item["link"] ..
 						" " .. LootFilter.Locale.LocText["LTWasDeleted"] .. ": " .. reason);
-					if (LootFilter.questUpdateToggle == 1) then
-						LootFilter.lastDeleted = item["name"];
-					end;
 				end;
 				table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, 1);
 			else

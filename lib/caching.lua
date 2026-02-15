@@ -52,10 +52,6 @@ function LootFilter.deleteItems(timeout, delete)
 	if (delete) then
 		LootFilter.constructCleanList();
 	end;
-	if (LootFilter.lastCleanListCount ~= table.getn(LootFilter.cleanList)) then
-		LootFilter.lastCleanListCount = table.getn(LootFilter.cleanList);
-	end;
-	
 	LootFilterButtonDeleteItems:Enable();
 	LootFilterButtonIWantTo:Disable();
 	if (not delete) and LootFilter.autoSellActive and (not LootFilterVars[LootFilter.REALMPLAYER].autosell) then
@@ -103,20 +99,13 @@ function LootFilter.deleteItems(timeout, delete)
 			end;
 
 			UseContainerItem(item["bag"], item["slot"]);
-			if (LootFilter.questUpdateToggle == 1) then
-				LootFilter.lastDeleted = item["name"];
-			end;
 
 			-- give the client time to actually sell the item
 			LootFilter.schedule(LootFilter.SELL_INTERVAL, LootFilter.checkIfItemSold, GetTime()+LootFilter.SELL_ITEM_TIMEOUT, item);
 			
 			return;
 		else -- delete items
-			if (LootFilter.deleteItemFromBag(item)) then
-				if (LootFilter.questUpdateToggle == 1) then
-					LootFilter.lastDeleted = item["name"];
-				end;
-			end;
+			LootFilter.deleteItemFromBag(item);
 			interval = LootFilter.LOOT_PARSE_DELAY;
 			LootFilter.CleanScrollBar_Update(true);
 			LootFilter.schedule(interval, LootFilter.deleteItems, timeout, delete);

@@ -183,13 +183,6 @@ function LootFilter.OnEvent()
 		return;
 	end;
 
-	if (event == "UNIT_SPELLCAST_START") then
-		LootFilter.spellCast = true;
-	end;
-	if (event == "UNIT_SPELLCAST_STOP") then
-		LootFilter.spellCast = false;
-	end;
-
 	if (event == "UI_INFO_MESSAGE") then
 		if (LootFilterVars[LootFilter.REALMPLAYER].deleteList["QUhQuest"] == nil) then
 			if (string.find(arg1, "slain: ") ~= nil) and (string.find(arg1, "slain: ") > 0) then
@@ -430,8 +423,6 @@ function LootFilter.OnLoad()
 	this:RegisterEvent("ADDON_LOADED");
 	this:RegisterEvent("ITEM_LOCK_CHANGED");
 	this:RegisterEvent("UI_INFO_MESSAGE");
-	this:RegisterEvent("UNIT_SPELLCAST_START");
-	this:RegisterEvent("UNIT_SPELLCAST_STOP");
 	this:RegisterEvent("MERCHANT_CLOSED");
 	this:RegisterEvent("MERCHANT_SHOW");
 	this:RegisterEvent("CHAT_MSG_ADDON");

@@ -1245,7 +1245,6 @@ function LootFilter.navigateTo(pageName)
 		LootFilter.initCopyTab()
 	end
 
-	LootFilter.currentPage = pageName
 end
 
 -- -------------------------------------------------------------------------
