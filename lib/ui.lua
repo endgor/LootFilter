@@ -600,8 +600,13 @@ local function createNamesPage(parent)
 	delChild:EnableMouse(true)
 
 	-- Pattern help
+	local patternHeader = page:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	patternHeader:SetPoint("BOTTOMLEFT", page, "BOTTOMLEFT", 10, 20)
+	patternHeader:SetText("Examples")
+	patternHeader:SetTextColor(1, 0.82, 0)
+
 	local patternHelp = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	patternHelp:SetPoint("BOTTOMLEFT", page, "BOTTOMLEFT", 10, 6)
+	patternHelp:SetPoint("TOPLEFT", patternHeader, "BOTTOMLEFT", 0, -2)
 	patternHelp:SetWidth(550)
 	patternHelp:SetJustifyH("LEFT")
 	patternHelp:SetText("|cffffffffExact:|r Hearthstone   |cffffffff*:|r *Beast*   |cffffffff#:|r #pattern   |cffffffff##:|r ##tooltip   |cffffffffComment:|r name ; note|r")
