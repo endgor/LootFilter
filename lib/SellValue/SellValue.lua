@@ -79,5 +79,4 @@ function ClearSellValueCache()
 	sellValueCache = {};
 end
 
--- Debug message
 DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00SellValue|r: GetSellValue API loaded (bundled with LootFilter)");
