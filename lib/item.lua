@@ -122,24 +122,6 @@ function LootFilter.getValueOfItem(item)
 end;
 
 
-function LootFilter.openItemIfContainer(item)
-	if (LootFilter.itemOpen == nil) or (LootFilter.itemOpen == false) then -- only try and open something once after looting because it locks up if you don't
-		for key,value in pairs(LootFilterVars[LootFilter.REALMPLAYER].openList) do
-			if (LootFilter.matchItemNames(item, value)) then
-				if (LootFilterVars[LootFilter.REALMPLAYER].notifyopen) then
-					LootFilter.print(LootFilter.Locale.LocText["LTTryopen"].." "..item["link"].." : "..LootFilter.Locale.LocText["LTNameMatched"].." ("..value..")");
-				end;
-			
-				LootFilter.itemOpen = true;
-				UseContainerItem(item["bag"], item["slot"]);
-				
-				return true;
-			end;
-		end;
-	end;
-	return false;
-end;
-
 
 function LootFilter.findItemWithLock()
 	for j=0 , 4 , 1 do

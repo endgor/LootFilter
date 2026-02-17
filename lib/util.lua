@@ -434,9 +434,9 @@ function LootFilter.sessionUpdateValues()
 	": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
 	LootFilterTextSessionValueTotal:SetText(LootFilter.Locale.LocText["LTSessionTotal"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(value / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(value % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", value % 100));
 	local average;
 	if (value ~= nil) and (value ~= 0) then
 		average = LootFilter.round(value / LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
@@ -445,9 +445,9 @@ function LootFilter.sessionUpdateValues()
 	end;
 	LootFilterTextSessionValueAverage:SetText(LootFilter.Locale.LocText["LTSessionAverage"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", average / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(average, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(average / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(average % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", average % 100));
 	if (LootFilterVars[LootFilter.REALMPLAYER].session["end"] == nil) then
 		LootFilterVars[LootFilter.REALMPLAYER].session["end"] = LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	end;
@@ -467,9 +467,9 @@ function LootFilter.sessionUpdateValues()
 	end;
 	LootFilterTextSessionValueHour:SetText(LootFilter.Locale.LocText["LTSessionValueHour"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(value / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(value % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", value % 100));
 end;
 
 function LootFilter.deleteTable(t)

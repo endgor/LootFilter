@@ -179,7 +179,6 @@ LootFilter.Locale = {
 		["TYWands"]= "Wands"
 	},
     LocText = {
-        ["LTTryopen"] = "trying to open",
         ["LTNameMatched"] = "name matched",
         ["LTQualMatched"] = "quality matched",
         ["LTQuest"] = "quest",              -- Used to match Quest Item as Quality Value

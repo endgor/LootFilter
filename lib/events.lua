@@ -215,7 +215,7 @@ function LootFilter.OnEvent()
 		local numitems = GetNumLootItems();
 		for i = 1, numitems, 1 do
 			if (not LootSlotIsCoin(i)) then
-				local icon, name, quantity, quality = GetLootSlotInfo(i);
+				local icon = GetLootSlotInfo(i);
 				if (icon ~= nil) then
 					local item = LootFilter.getBasicItemInfo(GetLootSlotLink(i));
 					if (item ~= nil) then
@@ -239,7 +239,6 @@ function LootFilter.OnEvent()
 			LootFilter.takeBagSnapshot();
 		end
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
-		LootFilter.itemOpen = false;
 		if not LootFilter.filterScheduled then
 			LootFilter.filterScheduled = true;
 			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
@@ -287,9 +286,6 @@ function LootFilter.OnEvent()
 			LootFilter.REALMPLAYER = GetCVar("realmName") .. " - " .. UnitName("player");
 			if (LootFilterVars[LootFilter.REALMPLAYER] == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER] = {};
-			end;
-			if (LootFilterVars[LootFilter.REALMPLAYER].openList == nil) then
-				LootFilterVars[LootFilter.REALMPLAYER].openList = {};
 			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].keepList == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].keepList = {};
