@@ -300,17 +300,29 @@ local function layoutTypeRows()
 		end
 	end
 
+	local function subtypeMatchesFilter(row)
+		local st = getTriState(row.typeKey)
+		if typeFilterMode == "keep" then return st == "keep"
+		elseif typeFilterMode == "delete" then return st == "delete"
+		elseif typeFilterMode == "mixed" then return st ~= "neutral"
+		end
+		return true
+	end
+
 	local y = 0
 	for _, row in ipairs(typeRows) do
 		if row.isSubtype then
 			local visible = false
 			if searching then
 				visible = string.find(string.lower(row.displayName), searchLower, 1, true) ~= nil
+			elseif filtering then
+				visible = subtypeMatchesFilter(row)
 			else
 				visible = expandedTypes[row.parentType] ~= nil
 			end
-			if visible and filtering then
-				visible = filterPassParents[row.parentType] ~= nil
+			-- When searching AND filtering, also require matching state
+			if searching and filtering and visible then
+				visible = subtypeMatchesFilter(row)
 			end
 			if visible then
 				row:ClearAllPoints()
@@ -331,7 +343,7 @@ local function layoutTypeRows()
 			if visible then
 				row:ClearAllPoints()
 				row:SetPoint("TOPLEFT", typeScrollChild, "TOPLEFT", 0, -y)
-				row.arrow:SetText(searching and "v" or (expandedTypes[row.typeName] and "v" or ">"))
+				row.arrow:SetText((searching or filtering) and "v" or (expandedTypes[row.typeName] and "v" or ">"))
 				row:Show()
 				y = y + 20
 			else
@@ -1131,14 +1143,14 @@ local function createHelpPage(parent)
 		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  highest priority, always kept\n" ..
 		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted\n" ..
 		"|cffffd100 3.|r  |cffffffffQuality / Type|r  |cff888888(Filters tab)|r  —  " ..
-		"last match wins between them\n" ..
+		"delete wins over keep when both match\n" ..
 		"|cffffd100 4.|r  |cffffffffValue|r  |cff888888(Values tab)|r  —  " ..
 		"catch-all, only if no quality/type rule matched\n" ..
 		"|cffffd100 5.|r  |cffffffffNo match|r  —  kept by default\n\n" ..
 		"|cffffffffName rules always win.|r A keep-name overrides any delete\n" ..
 		"property. A delete-name overrides any keep property.\n\n" ..
-		"|cffffffffQuality and Type rules are authoritative.|r If you set\n" ..
-		"Grey to Delete, all grey items are deleted regardless of value.\n\n" ..
+		"|cffffffffDelete beats Keep.|r If Grey is set to Delete and 2H Weapons\n" ..
+		"is set to Keep, a grey 2H weapon will still be deleted.\n\n" ..
 		"|cffffffffValue is a catch-all.|r It only deletes items that no\n" ..
 		"quality or type rule matched. For example, a blue item with\n" ..
 		"no type rule set will be deleted if it falls below the\n" ..
