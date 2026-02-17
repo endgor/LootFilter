@@ -1117,8 +1117,13 @@ local function createHelpPage(parent)
 	helpScroll:SetScrollChild(helpChild)
 
 	local yOff = 0
+	local firstSection = true
 
 	local function addHeader(text)
+		if not firstSection then
+			yOff = yOff - 12
+		end
+		firstSection = false
 		local h = createSectionHeader(helpChild, text, 10, yOff)
 		yOff = yOff - 22
 		return h
@@ -1138,23 +1143,12 @@ local function createHelpPage(parent)
 	-- Section: Filter Priority
 	addHeader("Filter Priority")
 	addBody(
-		"When you loot an item, Loot Filter checks your rules to decide\n" ..
-		"whether to keep or delete it.\n\n" ..
-		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  highest priority, always kept\n" ..
-		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted\n" ..
-		"|cffffd100 3.|r  |cffffffffQuality / Type|r  |cff888888(Filters tab)|r  —  " ..
-		"delete wins over keep when both match\n" ..
-		"|cffffd100 4.|r  |cffffffffValue|r  |cff888888(Values tab)|r  —  " ..
-		"catch-all, only if no quality/type rule matched\n" ..
-		"|cffffd100 5.|r  |cffffffffNo match|r  —  kept by default\n\n" ..
-		"|cffffffffName rules always win.|r A keep-name overrides any delete\n" ..
-		"property. A delete-name overrides any keep property.\n\n" ..
-		"|cffffffffDelete beats Keep.|r If Grey is set to Delete and 2H Weapons\n" ..
-		"is set to Keep, a grey 2H weapon will still be deleted.\n\n" ..
-		"|cffffffffValue is a catch-all.|r It only deletes items that no\n" ..
-		"quality or type rule matched. For example, a blue item with\n" ..
-		"no type rule set will be deleted if it falls below the\n" ..
-		"value threshold."
+		"Rules are checked in order. First match wins.\n\n" ..
+		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  always kept, overrides everything\n" ..
+		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted, overrides everything\n" ..
+		"|cffffd100 3.|r  |cffffffffQuality / Type|r  |cff888888(Filters tab)|r  —  delete wins if both match\n" ..
+		"|cffffd100 4.|r  |cffffffffValue|r  |cff888888(Values tab)|r  —  catch-all delete if nothing above matched\n" ..
+		"|cffffd100 5.|r  |cffffffffNo match|r  —  kept by default"
 	)
 
 	-- Section: Name Filters
@@ -1204,7 +1198,7 @@ local function createHelpPage(parent)
 		"when looted. If a quest item also matches a delete-name rule,\n" ..
 		"the delete rule wins and the auto-keep entry is removed.\n\n" ..
 		"|cffffd100Bag slots|r  —  enable \"Maintain free bag slots\" on the\n" ..
-		"Settings tab to auto-delete the lowest-value delete-flagged\n" ..
+		"Values tab to auto-delete the lowest-value delete-flagged\n" ..
 		"items when your bags are nearly full. Items matching keep rules\n" ..
 		"or no rules are never deleted this way.\n\n" ..
 		"|cffffd100Loot bot mode|r  —  toggle with |cff88bbcc/lf lootbot|r. Filters\n" ..
