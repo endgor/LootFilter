@@ -7,6 +7,7 @@ Reworked filter evaluation into sequential override chain (Quality -> Type -> Va
 Rewrote caching mode to respect filter rules instead of blindly deleting cheapest items.
 Caching now only deletes items that match a delete rule; keep and no-match items are never deleted.
 Fixed name tab scrollbar jumping unexpectedly when editing.
+Fixed silver/copper breakdown display in Clean tab using math.floor instead of string.sub.
 
 v1.0.12:
 Guard against accidental cursor item deletion during auto-delete.

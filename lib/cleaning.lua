@@ -6,7 +6,7 @@ function LootFilter.processCleaning()
 	if (totalValue > 0) then
 		totalValue = LootFilter.round(totalValue);
 		
-		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , totalValue / 10000)..string.format("|c00C0C0C0 %2ds" , string.sub(totalValue,-4)/100)..string.format("|c00CC9900 %2dc" , string.sub(totalValue,-2)));
+		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , math.floor(totalValue / 10000))..string.format("|c00C0C0C0 %2ds" , math.floor(totalValue % 10000 / 100))..string.format("|c00CC9900 %2dc" , totalValue % 100));
 	else 
 		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , 0)..string.format("|c00C0C0C0 %2ds" , 0)..string.format("|c00CC9900 %2dc" , 0));
 	end;
