@@ -1,8 +1,9 @@
 LOOT FILTER - PROJECT EBONHOLD - WoW WotLK 3.3.5a
 =====================================
-> **IMPORTANT:** If you get errors after updating this addon, it may be because
-> old saved variables are in an outdated format. To fix this, delete (or move as
-> a backup) `LootFilter.lua` and `LootFilter.lua.bak` from:
+> **Upgrading from 1.x?** Your settings will carry over automatically. The
+> filter logic changed in 2.0.0, so review your Quality and Type rules to make
+> sure they still behave as expected. If you get errors on load, delete
+> `LootFilter.lua` and `LootFilter.lua.bak` from:
 > `<WoW directory>\WTF\Account\<account ID>\<realm>\<character>\SavedVariables\`
 
 A rewrite of the classic LootFilter addon, now compatible with the Scavenger companion (works fine without it too).
@@ -29,6 +30,7 @@ COMMANDS
   **/lf status**       Show addon status
   **/lf help**         Show commands
 
+
 QUICK START
 -----------
 1. Type `/lf` to open options
@@ -37,7 +39,7 @@ QUICK START
    - **Quality**: Filter by rarity (Grey through Legendary)
    - **Type**: Filter by item type and subtype (Armor, Weapon, etc.)
    - **Name**: Keep/delete specific items by name pattern
-   - **Value**: Filter by vendor price thresholds
+   - **Value**: Delete items below a vendor price threshold
    - **Clean**: Sell or delete filtered items at a glance
    - **Copy**: Copy settings between characters
 4. Set quality/type filters to Keep, Delete, or leave neutral
@@ -45,20 +47,19 @@ QUICK START
 
 FILTER PRIORITY
 ---------------
-Filters are evaluated as follows:
+Filters are evaluated in this order:
 
   1. **Keep Names** — always kept (highest priority)
   2. **Delete Names** — always deleted
-  3. **Quality → Type → Value** — evaluated in order, each overrides the
-     previous. For example: Quality=keep, Type=keep, Value=delete → deleted.
-  4. **No Match** — kept by default
+  3. **Quality + Type** — if any delete rule matches, the item is deleted;
+     if only keep rules match, the item is kept. Delete beats keep when both
+     apply to the same item.
+  4. **Value** — if no quality or type rule fired, items below the delete
+     threshold are deleted as a catch-all
+  5. **No match** — kept by default
 
-Name filters always beat property filters. So you can set broad rules
-like "delete all Grey items" and still keep a specific grey item by name.
-
-For property filters (quality, type, value), the **last matching rule wins**.
-If you set Blue quality to keep but the item's value falls below your
-delete threshold, value overrides and the item is deleted.
+Name filters always beat property filters. You can set "delete all Grey items"
+and still protect a specific grey item by adding it to your keep name list.
 
 
 GENERAL TAB
@@ -87,7 +88,8 @@ leave both unchecked for neutral (no effect).
 Consumable, Gem, Recipe, Trade Goods, etc.) then click each subtype to
 cycle through neutral, keep, and delete.
 
-Quest items are automatically kept when looted — see Quest Auto-Keep below.
+Quest items are automatically added to your keep list when looted. If a
+quest item also matches a delete name rule, the delete rule wins.
 
 
 NAME PATTERNS
@@ -111,10 +113,11 @@ The default keep list includes `Hearthstone` so it is never filtered.
 
 VALUE FILTERING
 ---------------
-Set gold thresholds on the Value tab:
+The Value tab lets you delete items below a vendor price threshold. Enable
+the checkbox and enter a gold amount (e.g. `0.1` = 10 silver).
 
-- **Keep items worth more than X gold** (e.g. `0.5` = 50 silver)
-- **Delete items worth less than X gold** (e.g. `0.1` = 10 silver)
+Value only applies to items that did not already match a quality or type
+rule — it acts as a catch-all for everything else.
 
 A dropdown controls how value is calculated: per single item, per current
 stack, or per max stack size (default).
@@ -124,9 +127,6 @@ On the General tab you can also enable:
   (requires AucAdvanced addon)
 - **Keep items with no (known) value** — Prevent filtering items with no
   price data
-
-The **free bag slots** field sets how many slots to keep open when loot
-caching is enabled.
 
 
 CLEAN TAB
@@ -153,25 +153,6 @@ automatically. Monitoring pauses while loot, vendor, mail, trade, or
 auction windows are open to avoid false positives.
 
 Toggle it on when using a companion and off when you are done.
-
-
-SILENCE MODE
-------------
-`/lf silence` — Suppresses all filter chat messages. The addon keeps
-filtering, it just does so quietly.
-
-
-COPY SETTINGS
--------------
-The Copy tab lets you copy a character's entire configuration to your
-current character, or delete another character's saved settings.
-
-
-QUEST AUTO-KEEP
----------------
-Quest items are automatically added to your keep list when looted. If a
-quest item also matches a delete rule, the delete rule wins and the
-auto-keep entry is removed.
 
 
 LOCALIZATION
