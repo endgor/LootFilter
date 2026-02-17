@@ -115,12 +115,7 @@ function LootFilter.processBagUpdate()
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
 		if not LootFilter.filterScheduled then
 			LootFilter.filterScheduled = true;
-			if LootFilterVars[LootFilter.REALMPLAYER].caching then
-				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-			else
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-			end
+			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 		end
 	end
 
@@ -188,13 +183,6 @@ function LootFilter.OnEvent()
 		return;
 	end;
 
-	if (event == "UNIT_SPELLCAST_START") then
-		LootFilter.spellCast = true;
-	end;
-	if (event == "UNIT_SPELLCAST_STOP") then
-		LootFilter.spellCast = false;
-	end;
-
 	if (event == "UI_INFO_MESSAGE") then
 		if (LootFilterVars[LootFilter.REALMPLAYER].deleteList["QUhQuest"] == nil) then
 			if (string.find(arg1, "slain: ") ~= nil) and (string.find(arg1, "slain: ") > 0) then
@@ -227,15 +215,13 @@ function LootFilter.OnEvent()
 		local numitems = GetNumLootItems();
 		for i = 1, numitems, 1 do
 			if (not LootSlotIsCoin(i)) then
-				local icon, name, quantity, quality = GetLootSlotInfo(i);
+				local icon = GetLootSlotInfo(i);
 				if (icon ~= nil) then
 					local item = LootFilter.getBasicItemInfo(GetLootSlotLink(i));
 					if (item ~= nil) then
 						LootFilter.debug("|cff44ff44[LOOT]|r Loot window item: " ..
 							tostring(item["name"]) .. " (id=" .. tostring(item["id"]) .. ") " .. tostring(item["link"]));
-						if (not LootFilterVars[LootFilter.REALMPLAYER].caching) then
-							table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
-						end;
+						table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
 						if (GetSellValue) then -- record the value of this item
 							LootFilter.sessionAdd(item);
 							LootFilterVars[LootFilter.REALMPLAYER].session["end"] = time();
@@ -253,15 +239,9 @@ function LootFilter.OnEvent()
 			LootFilter.takeBagSnapshot();
 		end
 		LootFilter.LOOT_MAXTIME = GetTime() + LootFilter.LOOT_TIMEOUT;
-		LootFilter.itemOpen = false;
 		if not LootFilter.filterScheduled then
 			LootFilter.filterScheduled = true;
-			if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
-				LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-			else
-				LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-			end;
+			LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 		end;
 	end;
 
@@ -297,7 +277,7 @@ function LootFilter.OnEvent()
 				LootFilter.sellQueue = 1;
 				LootFilter.deleteItems(GetTime() + LootFilter.LOOT_TIMEOUT, false);
 			end;
-			LootFilter.selectButton(LootFilterButtonClean, LootFilterFrameClean);
+			LootFilter.navigateTo("Cleanup");
 		end;
 	end;
 
@@ -306,9 +286,6 @@ function LootFilter.OnEvent()
 			LootFilter.REALMPLAYER = GetCVar("realmName") .. " - " .. UnitName("player");
 			if (LootFilterVars[LootFilter.REALMPLAYER] == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER] = {};
-			end;
-			if (LootFilterVars[LootFilter.REALMPLAYER].openList == nil) then
-				LootFilterVars[LootFilter.REALMPLAYER].openList = {};
 			end;
 			if (LootFilterVars[LootFilter.REALMPLAYER].keepList == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].keepList = {};
@@ -406,7 +383,6 @@ function LootFilter.OnEvent()
 
 			LootFilter.takeBagSnapshot();
 
-			LootFilterButtonGeneral:LockHighlight();
 			LootFilter.setTitle();
 			LootFilter.getNames();
 			LootFilter.getNamesDelete();
@@ -417,9 +393,10 @@ function LootFilter.OnEvent()
 
 			LootFilter.initTypeTab();
 			LootFilter.initQualityTab();
-			UIDropDownMenu_Initialize(LootFilterSelectDropDownType, LootFilter.SelectDropDownType_Initialize);
 			UIDropDownMenu_Initialize(LootFilterSelectDropDownCalculate, LootFilter.SelectDropDownCalculate_Initialize);
-			LootFilter.SelectDropDown_Initialize();
+			UIDropDownMenu_Initialize(LootFilterSelectDropDown, LootFilter.SelectDropDown_Initialize);
+
+			LootFilter.navigateTo("Filters");
 
 
 			-- The following was added because GetSellValue is not always available when addons load
@@ -442,8 +419,6 @@ function LootFilter.OnLoad()
 	this:RegisterEvent("ADDON_LOADED");
 	this:RegisterEvent("ITEM_LOCK_CHANGED");
 	this:RegisterEvent("UI_INFO_MESSAGE");
-	this:RegisterEvent("UNIT_SPELLCAST_START");
-	this:RegisterEvent("UNIT_SPELLCAST_STOP");
 	this:RegisterEvent("MERCHANT_CLOSED");
 	this:RegisterEvent("MERCHANT_SHOW");
 	this:RegisterEvent("CHAT_MSG_ADDON");

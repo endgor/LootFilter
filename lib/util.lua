@@ -15,23 +15,6 @@ function LootFilter.debug(value)
 	DEFAULT_CHAT_FRAME:AddMessage("Loot Filter - DEBUG: " .. value, 1.0, 1.0, 1.0);
 end;
 
-function LootFilter.report(value)
-	if LootFilter.REALMPLAYER == "" or not LootFilterVars[LootFilter.REALMPLAYER] then
-		return;
-	end
-	if (LootFilterVars[LootFilter.REALMPLAYER].report) then
-		LootFilter.print(value);
-	end;
-end;
-
-function LootFilter.tcount(table)
-	local n = 0;
-	for _ in pairs(table) do
-		n = n + 1;
-	end
-	return n;
-end;
-
 function LootFilter.varCount()
 	local n = 0;
 	for k in pairs(LootFilterVars) do
@@ -45,22 +28,6 @@ end
 function LootFilter.trim(name)
 	return string.gsub(name, "LootFilter", "");
 end;
-
-function LootFilter.split(str, at)
-	if (not (type(str) == "string")) then
-		return
-	end
-
-	if (not str) then
-		str = ""
-	end
-
-	if (not at) then
-		return { str }
-	else
-		return { strsplit(at, str) };
-	end
-end
 
 function LootFilter.stripComment(searchName)
 	local comment = "";
@@ -365,23 +332,16 @@ function LootFilter.constructCleanList()
 					LootFilter.AddQuestItemToKeepList(item);
 					LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 
-					local reason = LootFilter.matchKeepNames(item);
-					if (reason ~= "") then
-						-- keep name takes highest priority, skip item
-					elseif (LootFilter.matchDeleteNames(item) ~= "") then
-						item["value"] = item["value"] - 10000000; -- delete name overrides keep properties
+					local action = LootFilter.evaluateItem(item);
+
+					if (action == "keep") then
+						-- skip item, don't add to clean list
+					elseif (action == "delete") then
+						item["value"] = item["value"] - 10000000; -- priority delete: sort to bottom
 						LootFilter.cleanList[z] = item;
 						z = z + 1;
 					else
-						reason = LootFilter.matchKeepProperties(item);
-						if (reason == "") then
-							reason = LootFilter.matchDeleteProperties(item);
-							if (reason ~= "") then
-								item["value"] = item["value"] - 10000000; -- make sure we delete the item with the lowest value (cleanList will be sorted)
-							end;
-							LootFilter.cleanList[z] = item;
-							z = z + 1;
-						end;
+						-- No match: skip (only explicitly delete-flagged items are candidates)
 					end;
 				else
 					slots = slots + 1;
@@ -396,11 +356,12 @@ function LootFilter.calculateCleanListValue()
 	local totalValue = 0;
 	local x = table.getn(LootFilter.cleanList);
 	for j = 1, x, 1 do
-		if (LootFilter.cleanList[j]["value"] < 0) then
-			totalValue = totalValue +
-			tonumber((LootFilter.cleanList[j]["value"] + 10000000) * LootFilter.cleanList[j]["amount"]);
+		local itemValue = tonumber(LootFilter.cleanList[j]["value"]) or 0;
+		local itemAmount = tonumber(LootFilter.cleanList[j]["amount"]) or 1;
+		if (itemValue < 0) then
+			totalValue = totalValue + (itemValue + 10000000) * itemAmount;
 		else
-			totalValue = totalValue + tonumber(LootFilter.cleanList[j]["value"] * LootFilter.cleanList[j]["amount"]);
+			totalValue = totalValue + itemValue * itemAmount;
 		end;
 	end;
 	return totalValue;
@@ -423,6 +384,7 @@ function LootFilter.copySettings()
 	LootFilter.getNames();
 	LootFilter.getNamesDelete();
 	LootFilter.getItemValue();
+	LootFilter.refreshUI();
 	LootFilterEditBoxTitleCopy5:Hide();
 	LootFilterEditBoxTitleCopy4:Show();
 	return;
@@ -434,7 +396,7 @@ function LootFilter.deleteSettings()
 		LootFilter.deleteTable(LootFilterVars[realmPlayer]);
 		LootFilterVars[realmPlayer] = nil;
 		UIDropDownMenu_SetSelectedValue(LootFilterSelectDropDown, nil);
-		LootFilter.SelectDropDown_Initialize();
+		UIDropDownMenu_Initialize(LootFilterSelectDropDown, LootFilter.SelectDropDown_Initialize);
 		LootFilterEditBoxTitleCopy4:Hide();
 		LootFilterEditBoxTitleCopy5:Show();
 		LootFilter.initCopyTab();
@@ -472,9 +434,9 @@ function LootFilter.sessionUpdateValues()
 	": " .. LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
 	LootFilterTextSessionValueTotal:SetText(LootFilter.Locale.LocText["LTSessionTotal"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(value / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(value % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", value % 100));
 	local average;
 	if (value ~= nil) and (value ~= 0) then
 		average = LootFilter.round(value / LootFilterVars[LootFilter.REALMPLAYER].session["itemCount"]);
@@ -483,9 +445,9 @@ function LootFilter.sessionUpdateValues()
 	end;
 	LootFilterTextSessionValueAverage:SetText(LootFilter.Locale.LocText["LTSessionAverage"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", average / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(average, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(average, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(average / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(average % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", average % 100));
 	if (LootFilterVars[LootFilter.REALMPLAYER].session["end"] == nil) then
 		LootFilterVars[LootFilter.REALMPLAYER].session["end"] = LootFilterVars[LootFilter.REALMPLAYER].session["start"];
 	end;
@@ -505,9 +467,9 @@ function LootFilter.sessionUpdateValues()
 	end;
 	LootFilterTextSessionValueHour:SetText(LootFilter.Locale.LocText["LTSessionValueHour"] ..
 	": " ..
-	string.format("|c00FFFF66 %2dg", value / 10000) ..
-	string.format("|c00C0C0C0 %2ds", string.sub(value, -4) / 100) ..
-	string.format("|c00CC9900 %2dc", string.sub(value, -2)));
+	string.format("|c00FFFF66 %2dg", math.floor(value / 10000)) ..
+	string.format("|c00C0C0C0 %2ds", math.floor(value % 10000 / 100)) ..
+	string.format("|c00CC9900 %2dc", value % 100));
 end;
 
 function LootFilter.deleteTable(t)

@@ -11,12 +11,7 @@ function LootFilter.confirmDelete(item)
 				LootFilter.inDialog = false;
 				if not LootFilter.filterScheduled then
 					LootFilter.filterScheduled = true;
-					if (LootFilterVars[LootFilter.REALMPLAYER].caching) then
-						LootFilterVars[LootFilter.REALMPLAYER].itemStack = {};
-						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processCaching);
-					else
-						LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
-					end;
+					LootFilter.schedule(LootFilter.LOOT_PARSE_DELAY, LootFilter.processItemStack);
 				end;
 			end,
 			OnAccept = function(self, data)
@@ -24,7 +19,7 @@ function LootFilter.confirmDelete(item)
 					ClearCursor();
 				end
 				if not data["bag"] or not data["slot"] then
-					geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
+					geterrorhandler()(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
 					return false;
 				end
 				local currentLink = GetContainerItemLink(data["bag"], data["slot"]);
@@ -83,7 +78,7 @@ end;
 function LootFilter.getStackSizeOfItem(item)
 	local amount;
 	_, amount, _, _, _ = GetContainerItemInfo(item["bag"], item["slot"]);
-	return amount;
+	return amount or 1;
 end;
 
 function LootFilter.getIdOfItem(itemLink)
@@ -96,7 +91,7 @@ end;
 
 function LootFilter.getMaxStackSizeOfItem(item)
 	local _, _, _, _, _, _, _, stackSize = GetItemInfo(item["id"])
-	return tonumber(stackSize);
+	return tonumber(stackSize) or 1;
 end;
 
 function LootFilter.getValueOfItem(item)
@@ -126,24 +121,6 @@ function LootFilter.getValueOfItem(item)
 	return itemValue;	
 end;
 
-
-function LootFilter.openItemIfContainer(item)
-	if (LootFilter.itemOpen == nil) or (LootFilter.itemOpen == false) then -- only try and open something once after looting because it locks up if you don't
-		for key,value in pairs(LootFilterVars[LootFilter.REALMPLAYER].openList) do
-			if (LootFilter.matchItemNames(item, value)) then
-				if (LootFilterVars[LootFilter.REALMPLAYER].notifyopen) then
-					LootFilter.print(LootFilter.Locale.LocText["LTTryopen"].." "..item["link"].." : "..LootFilter.Locale.LocText["LTNameMatched"].." ("..value..")");
-				end;
-			
-				LootFilter.itemOpen = true;
-				UseContainerItem(item["bag"], item["slot"]);
-				
-				return true;
-			end;
-		end;
-	end;
-	return false;
-end;
 
 
 function LootFilter.findItemWithLock()

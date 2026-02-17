@@ -1,8 +1,3 @@
-function LootFilter.sortByLink(a, b)
-	if ( not a ) then return true;	elseif ( not b ) then return false; end
-	return string.lower(a["name"]) < string.lower(b["name"]);
-end;
-
 function LootFilter.processCleaning()
 	LootFilterButtonDeleteItems:Disable();
 	LootFilterButtonIWantTo:Disable();
@@ -11,7 +6,7 @@ function LootFilter.processCleaning()
 	if (totalValue > 0) then
 		totalValue = LootFilter.round(totalValue);
 		
-		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , totalValue / 10000)..string.format("|c00C0C0C0 %2ds" , string.sub(totalValue,-4)/100)..string.format("|c00CC9900 %2dc" , string.sub(totalValue,-2)));
+		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , math.floor(totalValue / 10000))..string.format("|c00C0C0C0 %2ds" , math.floor(totalValue % 10000 / 100))..string.format("|c00CC9900 %2dc" , totalValue % 100));
 	else 
 		LootFilterTextCleanTotalValue:SetText(LootFilter.Locale.LocText["LTTotalValue"]..": "..string.format("|c00FFFF66 %2dg" , 0)..string.format("|c00C0C0C0 %2ds" , 0)..string.format("|c00CC9900 %2dc" , 0));
 	end;
@@ -35,9 +30,11 @@ function LootFilter.showItemTooltip(frame)
 
 		item = LootFilter.findItemInBags(item);
 		
-		GameTooltip:SetOwner(frame, "ANCHOR_LEFT");
-		GameTooltip:SetBagItem(item["bag"], item["slot"]);
-		GameTooltip:Show();
+		if (item["bag"] >= 0) and (item["slot"] >= 0) then
+			GameTooltip:SetOwner(frame, "ANCHOR_LEFT");
+			GameTooltip:SetBagItem(item["bag"], item["slot"]);
+			GameTooltip:Show();
+		end;
 	end;
 end;
 

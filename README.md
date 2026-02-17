@@ -40,21 +40,25 @@ QUICK START
    - **Value**: Filter by vendor price thresholds
    - **Clean**: Sell or delete filtered items at a glance
    - **Copy**: Copy settings between characters
-4. For each quality/type filter choose: Default / Keep / Delete
+4. Set quality/type filters to Keep, Delete, or leave neutral
 
 
 FILTER PRIORITY
 ---------------
-Filters are evaluated in this order — first match wins:
+Filters are evaluated as follows:
 
-  1. **Keep Names** — always kept
+  1. **Keep Names** — always kept (highest priority)
   2. **Delete Names** — always deleted
-  3. **Keep Properties** — quality, type, or value rules that keep
-  4. **Delete Properties** — quality, type, or value rules that delete
-  5. **No Match** — kept by default
+  3. **Quality → Type → Value** — evaluated in order, each overrides the
+     previous. For example: Quality=keep, Type=keep, Value=delete → deleted.
+  4. **No Match** — kept by default
 
 Name filters always beat property filters. So you can set broad rules
 like "delete all Grey items" and still keep a specific grey item by name.
+
+For property filters (quality, type, value), the **last matching rule wins**.
+If you set Blue quality to keep but the item's value falls below your
+delete threshold, value overrides and the item is deleted.
 
 
 GENERAL TAB
@@ -63,7 +67,9 @@ The General tab has the master enable toggle plus settings for:
 
 - **Scavenger Loot Filter** — Loot bot mode for auto-looting companions
   (see Loot Bot Mode below)
-- **Loot Caching** — Auto-delete lowest-value items when bags get full
+- **Maintain free bag slots** — When bags get tight, auto-delete the
+  lowest-value items that match a delete rule (items matching keep rules
+  or no rules are never deleted)
 - **Confirm item delete** — Require confirmation before destroying items
 - **Notification toggles** — Control which chat messages appear
   (delete, keep, no match, container open, new version)
@@ -73,12 +79,13 @@ The General tab has the master enable toggle plus settings for:
 
 QUALITY & TYPE FILTERING
 ------------------------
-**Quality tab:** Set each rarity tier (Poor through Legendary, plus
-Heirloom and Quest) to Default / Keep / Delete.
+**Quality tab:** Each rarity tier (Poor through Legendary, plus Heirloom
+and Quest) has Keep and Del checkboxes. Check one to set the action, or
+leave both unchecked for neutral (no effect).
 
 **Type tab:** Pick an item type from the dropdown (Armor, Weapon,
-Consumable, Gem, Recipe, Trade Goods, etc.) then set each subtype to
-Default / Keep / Delete.
+Consumable, Gem, Recipe, Trade Goods, etc.) then click each subtype to
+cycle through neutral, keep, and delete.
 
 Quest items are automatically kept when looted — see Quest Auto-Keep below.
 

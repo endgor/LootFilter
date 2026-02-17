@@ -1,5 +1,14 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.0:
+Rewrote UI with new tabbed layout, sidebar navigation, and streamlined options.
+Replaced quality filter chips with Keep/Del checkbox layout.
+Reworked filter evaluation into sequential override chain (Quality -> Type -> Value, last match wins).
+Rewrote caching mode to respect filter rules instead of blindly deleting cheapest items.
+Caching now only deletes items that match a delete rule; keep and no-match items are never deleted.
+Fixed name tab scrollbar jumping unexpectedly when editing.
+Fixed silver/copper breakdown display in Clean tab using math.floor instead of string.sub.
+
 v1.0.12:
 Guard against accidental cursor item deletion during auto-delete.
 Revalidate item link in confirm-delete popup to prevent deleting wrong item after inventory shift.

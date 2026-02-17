@@ -157,7 +157,7 @@ LootFilter.Locale = {
 		
 		["OPEnable"]= "Enable Loot Filter",
 		["OPLootBot"]= "Enable Scavenger Loot Filter",
-		["OPCaching"]= "Enable Loot Caching",
+		["OPCaching"]= "Maintain free bag slots (auto-delete lowest value items)",
 		["OPTooltips"]= "Show tooltips",
 		["OPNotifyDelete"]= "Notify on delete",
 		["OPNotifyKeep"]= "Notify on keep",
@@ -179,7 +179,6 @@ LootFilter.Locale = {
 		["TYWands"]= "Wands"
 	},
     LocText = {
-        ["LTTryopen"] = "trying to open",
         ["LTNameMatched"] = "name matched",
         ["LTQualMatched"] = "quality matched",
         ["LTQuest"] = "quest",              -- Used to match Quest Item as Quality Value
@@ -207,6 +206,7 @@ LootFilter.Locale = {
 		["LTSessionValueHour"] = "Average / hour",
         ["LTNoMatchingItems"] = "No matching items were found.",
         ["LTItemLowestValue"] = "item has lowest value",
+        ["LTBagSpaceLow"] = "bag space low",
         ["LTVendorWinClosedWhileSelling"] = "Vendor window closed while selling items.",
         ["LTTimeOutItemNotFound"] = "Timeout. One or more items in the list were not found.",
     },
@@ -222,7 +222,8 @@ LootFilter.Locale = {
         ["LToolTip9"] = "Enter the number of free bag slots you want to keep. Loot Filter will start replacing lower valued items with higher ones if the number of free slots is less than what you enter here.",
         ["LToolTip10"] = "Any items listed here do not match any of the keep properties. You can choose to automatically sell or delete these items. Use shift-mouseclick to add an item to the keep list.",
         ["LToolTip11"] = "Items that match a name listed here are automatically opened. Using this on scrolls and such will not work, and generate an error.\n\nEnter one name per line. Matching is case-insensitive.\n\nExact match:   Thick-shelled Clam\nWildcard (*):   *Clam*  (contains 'Clam')\n                       *Clam    (ends with 'Clam')\nPartial (#):     #Clam   (contains 'Clam')\nComments:      *Clam* ; open all clams",
-		["LToolTip12"] = "Select how you want to calculate the value of items (value * number_of_items). Number_of_items can be a single item, the current stack size or the maximum stack size."
+		["LToolTip12"] = "Select how you want to calculate the value of items (value * number_of_items). Number_of_items can be a single item, the current stack size or the maximum stack size.",
+		["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
     },
 };
 
