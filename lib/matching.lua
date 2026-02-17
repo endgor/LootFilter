@@ -93,7 +93,7 @@ end
 --
 -- Priority chain:
 --   1. Names        (highest - explicit name always wins)
---   2. Quality/Type (keep/delete by rarity or item type, last match wins)
+--   2. Quality/Type (delete wins over keep when both match)
 --   3. Value        (additional delete - only if no quality/type rule matched)
 --   4. No match     (kept by default)
 --
@@ -111,20 +111,19 @@ function LootFilter.evaluateItem(item)
 		return "delete", reason;
 	end
 
-	-- Step 2: Quality and Type (override each other, last match wins)
+	-- Step 2: Quality and Type (delete wins over keep when both match)
+	local qualAction, qualReason = LootFilter.matchQuality(item);
+	local typeAction, typeReason = LootFilter.matchType(item);
+
 	local action = nil;
 	local lastReason = nil;
 
-	local qualAction, qualReason = LootFilter.matchQuality(item);
-	if qualAction then
-		action = qualAction;
-		lastReason = qualReason;
-	end
-
-	local typeAction, typeReason = LootFilter.matchType(item);
-	if typeAction then
-		action = typeAction;
-		lastReason = typeReason;
+	if qualAction == "delete" or typeAction == "delete" then
+		action = "delete";
+		lastReason = (qualAction == "delete") and qualReason or typeReason;
+	elseif qualAction == "keep" or typeAction == "keep" then
+		action = "keep";
+		lastReason = (qualAction == "keep") and qualReason or typeReason;
 	end
 
 	-- Step 3: Value (additional delete — only when no quality/type rule matched)
