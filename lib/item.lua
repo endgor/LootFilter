@@ -19,7 +19,7 @@ function LootFilter.confirmDelete(item)
 					ClearCursor();
 				end
 				if not data["bag"] or not data["slot"] then
-					geterrorhandler(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
+					geterrorhandler()(("Invalid item position. %s, %s, %s"):format(tostring(data["name"]), tostring(data["bag"]), tostring(data["slot"])));
 					return false;
 				end
 				local currentLink = GetContainerItemLink(data["bag"], data["slot"]);
@@ -78,7 +78,7 @@ end;
 function LootFilter.getStackSizeOfItem(item)
 	local amount;
 	_, amount, _, _, _ = GetContainerItemInfo(item["bag"], item["slot"]);
-	return amount;
+	return amount or 1;
 end;
 
 function LootFilter.getIdOfItem(itemLink)
@@ -91,7 +91,7 @@ end;
 
 function LootFilter.getMaxStackSizeOfItem(item)
 	local _, _, _, _, _, _, _, stackSize = GetItemInfo(item["id"])
-	return tonumber(stackSize);
+	return tonumber(stackSize) or 1;
 end;
 
 function LootFilter.getValueOfItem(item)

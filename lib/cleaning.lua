@@ -30,9 +30,11 @@ function LootFilter.showItemTooltip(frame)
 
 		item = LootFilter.findItemInBags(item);
 		
-		GameTooltip:SetOwner(frame, "ANCHOR_LEFT");
-		GameTooltip:SetBagItem(item["bag"], item["slot"]);
-		GameTooltip:Show();
+		if (item["bag"] >= 0) and (item["slot"] >= 0) then
+			GameTooltip:SetOwner(frame, "ANCHOR_LEFT");
+			GameTooltip:SetBagItem(item["bag"], item["slot"]);
+			GameTooltip:Show();
+		end;
 	end;
 end;
 
