@@ -77,6 +77,7 @@ LootFilter.Locale = {
 			["TYMiscellaneousJunk"]= "Camelote",
 			["TYMiscellaneousReagent"]= "Reactif",
 			["TYMiscellaneousPet"]= "Animal de companie (inoffensif)",
+			["TYMiscellaneousMount"]= "Monture",
 			["TYMiscellaneousHoliday"]= "Holiday",
 			["TYMiscellaneousOther"]= "Autres",
 			-- Gem

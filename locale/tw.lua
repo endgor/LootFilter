@@ -80,6 +80,7 @@ if ( GetLocale() == "zhTW" ) then
 			["TYMiscellaneousJunk"]= "垃圾",
 			["TYMiscellaneousReagent"]= "施法材料",
 			["TYMiscellaneousPet"]= "寵物",
+			["TYMiscellaneousMount"]= "坐騎",
 			["TYMiscellaneousHoliday"]= "節慶用品",
 			["TYMiscellaneousOther"]= "其他",
 			-- Gem

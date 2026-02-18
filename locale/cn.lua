@@ -77,6 +77,7 @@ if ( GetLocale() == "zhCN" ) then
 			["TYMiscellaneousJunk"]= "垃圾",
 			["TYMiscellaneousReagent"]= "药剂",
 			["TYMiscellaneousPet"]= "宠物",
+			["TYMiscellaneousMount"]= "坐骑",
 			["TYMiscellaneousHoliday"]= "节日",
 			["TYMiscellaneousOther"]= "其他",
 			-- Gem

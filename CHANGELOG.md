@@ -1,5 +1,8 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.1:
+Added Miscellaneous > Mount item type to the Filters tab (all locales).
+
 v2.0.0:
 Rewrote UI with new tabbed layout, sidebar navigation, and streamlined options.
 Replaced quality filter chips with Keep/Del checkbox layout.

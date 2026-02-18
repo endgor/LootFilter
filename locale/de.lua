@@ -77,6 +77,7 @@ if ( GetLocale() == "deDE" ) then
 			["TYMiscellaneousJunk"] = "M\195\188ll",
 			["TYMiscellaneousReagent"] = "Reagenzien",
 			["TYMiscellaneousPet"] = "Tier",
+			["TYMiscellaneousMount"] = "Reittier",
 			["TYMiscellaneousHoliday"] = "Holiday",
 			["TYMiscellaneousOther"] = "Andere",
 

@@ -77,6 +77,7 @@ LootFilter.Locale = {
 			["TYMiscel\195\161neaChatarra"]= "Chatarra",
 			["TYMiscel\195\161neaComponente"]= "Componente",
 			["TYMiscel\195\161neaMascota"]= "Mascota",
+			["TYMiscel\195\161neaMontura"]= "Montura",
 			["TYMiscel\195\161neaVacaciones"]= "Vacaciones",
 			["TYMiscel\195\161neaOtros"]= "Otros",
 			
