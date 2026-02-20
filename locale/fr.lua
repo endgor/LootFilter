@@ -177,7 +177,6 @@ LootFilter.Locale = {
 			["TYWands"]= "Baguettes"
 		},
 		LocText = {
-			["LTTryopen"] = "Ouverture...",
 			["LTNameMatched"] = "Nom correspondant",
 			["LTQualMatched"] = "Qualite correspondante",
 			["LTQuest"] = "Quete",              -- Used to match Quest Item as Quality Value
@@ -192,8 +191,7 @@ LootFilter.Locale = {
 			["LTWasDeleted"] = "A ete supprime",
 			["LTNewVersion1"] = "Une nouvelle version",
 			["LTNewVersion2"] = "de Loot Fliter a ete trouvee. Telechargez-la sur www.lootfilter.com .",
-			["LTAddedCosQuest"] = "Ajoute a cause de quete",
-			["LTDeleteItems"] = "Suppressions objets",
+["LTDeleteItems"] = "Suppressions objets",
 			["LTSellItems"] = "Ventes d'objets",
 			["LTFinishedSC"] = "Fin de vente / nettoyage.",
 			["LTNoOtherCharacterToCopySettings"] = "Aucun personnage disponible pour copie de parametres.",
@@ -205,6 +203,7 @@ LootFilter.Locale = {
            ["LTSessionValueHour"] = "Moyenne/heure",			
 			["LTNoMatchingItems"] = "Aucun objet trouve.",
 			["LTItemLowestValue"] = "Objet avec la plus faible valeur",
+			["LTBagSpaceLow"] = "bag space low",
 			["LTVendorWinClosedWhileSelling"] = "Fenetre vendeur fermee pendant la vente.",
 			["LTTimeOutItemNotFound"] = "Timeout. Un ou plusieurs elements de la liste n'ont pas ete retrouves.",
 		},
@@ -220,7 +219,8 @@ LootFilter.Locale = {
 			["LToolTip9"] = "Entrez le nombre d'emplacements libres dans votre sac que vous devez conserver. Loot Filter devra remplacer les objets de valeur plus faible par ceux de plus forte valeur si le nombre d'emplacements libres est inferieur a ce qui a ete defini ici.",
 			["LToolTip10"] = "Les objets cites ici ne correspondent a aucune propriete enregistree. Vous pouvez choisir de vendre ou supprimer automatiquement ces objets. Utilisez Shift+Clic pour ajouter a la liste des objet a garder.",
 			["LToolTip11"] = "Les objets correspondants a un nom liste ici seront automatiquement ouverts. Utiliser ceci pour des parchemins ne fonctionnera pas, et generera une erreur.\n\nUn nom par ligne. La casse est ignoree.\n\nExact:           Palourde a carapace epaisse\nJoker (*):      *Palourde*  (contient 'Palourde')\n                       *Palourde    (finit par 'Palourde')\nPartiel (#):    #Palourde   (contient 'Palourde')\nCommentaire: *Palourde* ; ouvrir les palourdes",
-			["LToolTip12"] = "Selectionnez comment calculer la valeur des objets (valeur * nombre_objets). Nombre_objets peut etre un objet seul, la taille actuelle de la pile ou la taille maximale de la pile."
+			["LToolTip12"] = "Selectionnez comment calculer la valeur des objets (valeur * nombre_objets). Nombre_objets peut etre un objet seul, la taille actuelle de la pile ou la taille maximale de la pile.",
+			["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
 		},
 	};
 	
@@ -238,6 +238,7 @@ LootFilter.Locale = {
 	LFINT_BTN_YESSURE = "Oui je suis sur" ;
 	LFINT_BTN_COPYSETTINGS = "Copier parametres";
 	LFINT_BTN_DELETESETTINGS = "Delete settings";
+	LFINT_BTN_RESET = "Reset";
 	
 	LFINT_TXT_SELECTBAGS = "Selectionnez les sacs qui seront utilises pour Loot Filter.";
 	LFINT_TXT_ITEMKEEP = "Objets a GARDER.";
@@ -249,6 +250,7 @@ LootFilter.Locale = {
 	LFINT_TXT_AUTOOPEN = "Les objets ci-dessous seront automatiquement ouverts et lootes (comme les palourdes)." ;
 	LFINT_TXT_SELECTCHARCOPY = "Selectionnez le personnage duquel vous voulez copier les parametres." ;
 	LFINT_TXT_COPYSUCCESS = "Les parametres ont ete copies avec succes." ;
+	LFINT_TXT_DELETESUCCESS = "Settings were deleted succesfully." ;
 	LFINT_TXT_SELECTTYPE = "Selectionnez un sous-type: ";
 	
 LFINT_TXT_SIZETOCALCULATE = "Utiliser pour calculer la valeur de l'objet:";

@@ -30,8 +30,6 @@ function LootFilter.processItemStack()
 		item["amount"] = LootFilter.getStackSizeOfItem(item);
 		LootFilter.ensureItemValue(item);
 		LootFilter.refreshItemInfoFromBag(item);
-		LootFilter.AddQuestItemToKeepList(item);
-		LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 		local action, reason = LootFilter.evaluateItem(item);
 		LootFilter.debug("|cffffffcc[PROCESS]|r evaluateItem => " ..
 			tostring(action) .. ": " .. tostring(reason));

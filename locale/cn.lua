@@ -177,7 +177,6 @@ if ( GetLocale() == "zhCN" ) then
 			["TYWands"]= "魔杖"
 		},
 		LocText = {
-			["LTTryopen"] = "正在尝试打开",
 			["LTNameMatched"] = "名称匹配",
 			["LTQualMatched"] = "品质匹配",
 			["LTQuest"] = "任务物品",              -- Used to match Quest Item as Quality Value
@@ -192,8 +191,7 @@ if ( GetLocale() == "zhCN" ) then
 			["LTWasDeleted"] = "被摧毁",
 			["LTNewVersion1"] = "一个新版本",
 			["LTNewVersion2"] = "Loot Filter已检测到. 请从 http://www.lootfilter.com .下载",
-			["LTAddedCosQuest"] = "任务补充",
-			["LTDeleteItems"] = "摧毁物品",
+["LTDeleteItems"] = "摧毁物品",
 			["LTSellItems"] = "出售物品",
 			["LTFinishedSC"] = "出售完毕/清除完毕.",
 			["LTNoOtherCharacterToCopySettings"] = "没有其他的设置可复制.",
@@ -205,6 +203,7 @@ if ( GetLocale() == "zhCN" ) then
 			["LTSessionValueHour"] = "Average / hour",			
 			["LTNoMatchingItems"] = "发现不符合条件的物品.",
 			["LTItemLowestValue"] = "物品的最低值",
+			["LTBagSpaceLow"] = "bag space low",
 			["LTVendorWinClosedWhileSelling"] = "卖方窗口关闭，而销售虚拟物品.",
 			["LTTimeOutItemNotFound"] = "超时.一个或者多个清单中的物品没有找到.",
 		},
@@ -220,7 +219,8 @@ if ( GetLocale() == "zhCN" ) then
 			["LToolTip9"] = "输入你想要指定保持的背包空位. 如果背包空位低于你的指定数后,Loot Filter 将会在开始用高价值的物品替换掉低价值的物品,低价值的物品将被摧毁.",
 			["LToolTip10"] = "这里列出所有不匹配任何需要保留规则的物品,你可以选择自动出售或者删除这些物品. 使用 shift + 鼠标点击添加物品到保留列表中.",
 			["LToolTip11"] = "会被自动打开的物品. 这个选项如果对卷轴类物品使用不会起任何作用,并会产生一条UI错误.\n\n每行一个名称. 不区分大小写.\n\n精确匹配:     厚壳蛤\n通配符 (*):    *蛤*  (包含 '蛤')\n                       *蛤    (以 '蛤' 结尾)\n部分匹配 (#): #蛤   (包含 '蛤')\n注释:              *蛤* ; 打开所有蛤",
-			["LToolTip12"] = "选择你想要来计算物品的价值的方法 (价值 * 物品数量). 物品数量可以是一个物品、 自定义堆叠数量或最高堆叠数量."
+			["LToolTip12"] = "选择你想要来计算物品的价值的方法 (价值 * 物品数量). 物品数量可以是一个物品、 自定义堆叠数量或最高堆叠数量.",
+			["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
 		},
 	};
 	
@@ -250,6 +250,7 @@ if ( GetLocale() == "zhCN" ) then
 	LFINT_TXT_AUTOOPEN = "你想要自动拾取并自动打开的物品(比如蛤)." ;
 	LFINT_TXT_SELECTCHARCOPY = "选择你希望复制的设置." ;
 	LFINT_TXT_COPYSUCCESS = "设置复制成功." ;
+	LFINT_TXT_DELETESUCCESS = "Settings were deleted succesfully." ;
 	LFINT_TXT_SELECTTYPE = "选择一个子类: ";
 	LFINT_TXT_SIZETOCALCULATE = "使用物品价值计算: ";
 	LFINT_TXT_SIZETOCALCULATE_TEXT1 = "单个物品";

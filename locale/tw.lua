@@ -180,7 +180,6 @@ if ( GetLocale() == "zhTW" ) then
 			["TYWands"]= "魔杖"
 		},
 		LocText = {
-			["LTTryopen"] = "嘗試開啟",
 			["LTNameMatched"] = "名稱符合",
 			["LTQualMatched"] = "品質符合",
 			["LTQuest"] = "任務",              -- Used to match Quest Item as Quality Value
@@ -195,8 +194,7 @@ if ( GetLocale() == "zhTW" ) then
 			["LTWasDeleted"] = "已刪除",
 			["LTNewVersion1"] = "新版本",
 			["LTNewVersion2"] = "Loot Filter 已經找到。 請至 http://www.lootfilter.com 下載。",
-			["LTAddedCosQuest"] = "Added because of quest",
-			["LTDeleteItems"] = "刪除物品",
+["LTDeleteItems"] = "刪除物品",
 			["LTSellItems"] = "售出物品",
 			["LTFinishedSC"] = "已完成 售出/清除。",
 			["LTNoOtherCharacterToCopySettings"] = "你目前沒有任何可供複製設定的角色。",
@@ -208,6 +206,7 @@ if ( GetLocale() == "zhTW" ) then
 			["LTSessionValueHour"] = "平均價格 / 每小時",
 			["LTNoMatchingItems"] = "沒有找到符合的物品。",
 			["LTItemLowestValue"] = "物品有最低價格",
+			["LTBagSpaceLow"] = "bag space low",
 			["LTVendorWinClosedWhileSelling"] = "當售出物品時關閉商人視窗。",
 			["LTTimeOutItemNotFound"] = "逾時。 在清單中的物品有一或多項無法找到。",
 		},
@@ -223,7 +222,8 @@ if ( GetLocale() == "zhTW" ) then
 			["LToolTip9"] = "Enter the number of free bag slots you want to keep. Loot Filter will start replacing lower valued items with higher ones if the number of free slots is less than what you enter here.",
 			["LToolTip10"] = "此清單為沒有附合任何一個保留條件的物品。 你可以選擇自動售出或刪除這些物品。 使用 shift-滑鼠左鍵 點擊物品名稱來新增物品到保留清單中。",
 			["LToolTip11"] = "符合此清單中名稱的物品將會被自動開啟。 此功能不能使用在如卷軸這一類的物品上，否則會產生一個錯誤。\n\n每行一個名稱。不區分大小寫。\n\n精確比對:       厚殼蚌殼\n萬用字元 (*):  *蚌殼*  (包含 '蚌殼')\n                          *蚌殼    (以 '蚌殼' 結尾)\n部份比對 (#):  #蚌殼   (包含 '蚌殼')\n註解:                *蚌殼* ; 開啟所有蚌殼",
-			["LToolTip12"] = "選取你想要用來計算物品價格的方式 (價格 * 物品數量)。 物品數量可以是單一物品、目前堆疊的數量或最大堆疊的數量。"
+			["LToolTip12"] = "選取你想要用來計算物品價格的方式 (價格 * 物品數量)。 物品數量可以是單一物品、目前堆疊的數量或最大堆疊的數量。",
+			["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
 		},
 	};
 	
@@ -253,6 +253,7 @@ if ( GetLocale() == "zhTW" ) then
 	LFINT_TXT_AUTOOPEN = "你想要進行自動開啟及拾取的物品 (例如：蚌殼)：" ;
 	LFINT_TXT_SELECTCHARCOPY = "選擇你想要做為複製來源的角色名稱：" ;
 	LFINT_TXT_COPYSUCCESS = "設定已成功複製。" ;
+	LFINT_TXT_DELETESUCCESS = "Settings were deleted succesfully." ;
 	LFINT_TXT_SELECTTYPE = "選取一個子類型： ";
 	LFINT_TXT_SIZETOCALCULATE = "計算物品價格使用： ";
 	LFINT_TXT_SIZETOCALCULATE_TEXT1 = "單一物品";

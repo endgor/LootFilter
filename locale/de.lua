@@ -178,7 +178,6 @@ if ( GetLocale() == "deDE" ) then
 			["TYWands"] = "Zauberst\195\164be",
         },
         LocText = {
-			["LTTryopen"] = "versuche Gegenstand zu \195\182\ffnen",
 			["LTNameMatched"] = "Name gefunden",
 			["LTQualMatched"] = "Qualit\195\164t abgestimmt",
 			["LTQuest"] = "Quest",				-- Used to match Quest Item as Quality Value
@@ -193,8 +192,7 @@ if ( GetLocale() == "deDE" ) then
 			["LTWasDeleted"] = "wurde gel\195\182scht",
 			["LTNewVersion1"] = "Eine neue Version von",
 			["LTNewVersion2"] = "Loot Filter, wurde erkannt. Download von http://www.lootfilter.com.",
-			["LTAddedCosQuest"] = "hinzugef\195\188gt, da der Gegenstand ein Questitem ist.",
-			["LTDeleteItems"] = "L\195\182sche Gegenst\195\164nde",
+["LTDeleteItems"] = "L\195\182sche Gegenst\195\164nde",
 			["LTSellItems"] = "Verkaufe Gegenst\195\164nde",
 			["LTFinishedSC"] = "Fertig verkauft / gel\195\182scht.",
 			["LTNoOtherCharacterToCopySettings"] = "Kein anderer Charakter verf\195\188gbar um Einstellungen zu \195\188bernehmen.",
@@ -206,6 +204,7 @@ if ( GetLocale() == "deDE" ) then
 			["LTSessionValueHour"] = "Average / hour",
 			["LTNoMatchingItems"] = "kein passender Gegenstand gefunden.",
 			["LTItemLowestValue"] = "Der Gegenstand der den niedrigsten Wert hat",
+			["LTBagSpaceLow"] = "bag space low",
 			["LTVendorWinClosedWhileSelling"] = "H\195\164ndlerfenster wurde geschlossen, w\195\164hrend Gegenst\195\164nde verkauft wurden.",
 			["LTTimeOutItemNotFound"] = "Timeout. Einer oder mehrere Gegenst\195\164nde in der Liste wurden nicht gefunden.",
         },
@@ -221,7 +220,8 @@ if ( GetLocale() == "deDE" ) then
 			["LToolTip9"] = "Gieb die Anzahl der freizuhaltenden Taschenpl\195\164tze ein. Loot Filter ersetzt niederpreisige Gegenst\195\164nde mit h\195\182herpreisigen Gegenst\195\164nden, wenn die angegebnen Taschenpl\195\164tze nicht verf\195\188gbar sind.",
 			["LToolTip10"] = "Alle hier aufgef\195\188hrten Gegenst\195\164nde haben mit keinem Behaltenkriterium \195\188bereingestimmt. Du kannst w\195\164hlen, ob du die Gegenst\195\164nde automatisch zu verkaufen oder l\195\182schen m\195\182chtest. Verwende Shift-Klick auf einen Gegenstand, um ihn zur BEHALTEN-Liste hinzuzuf\195\188gen.",
 			["LToolTip11"] = "Gegenst\195\164nde, die hier aufgef\195\188hrt sind, werden automatisch ge\195\182ffnet. Benutze diese Funktion NICHT f\195\188r Schriftrollen. Es wird nicht funktionieren, und generiert einen Fehler.\n\nEin Name pro Zeile. Gross-/Kleinschreibung wird ignoriert.\n\nExakt:              Dickschalige Muschel\nPlatzhalter (*):  *Muschel*  (enth\195\164lt 'Muschel')\n                          *Muschel    (endet mit 'Muschel')\nTeilsuche (#):   #Muschel   (enth\195\164lt 'Muschel')\nKommentar:       *Muschel* ; alle Muscheln \195\182ffnen",
-			["LToolTip12"] = "W\195\164hlen, wie du es berechnet haben willst (Wert * Anzahl Gegenst\195\164nde). Ein einzelner Gegenstand, die aktuelle Stockgr\195\182sse oder die maximale Stockgr\195\182sse."
+			["LToolTip12"] = "W\195\164hlen, wie du es berechnet haben willst (Wert * Anzahl Gegenst\195\164nde). Ein einzelner Gegenstand, die aktuelle Stockgr\195\182sse oder die maximale Stockgr\195\182sse.",
+			["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
 		},
 	};
 
@@ -251,6 +251,7 @@ if ( GetLocale() == "deDE" ) then
 	LFINT_TXT_AUTOOPEN = "Gegenst\195\164nde die du automatisch \195\182ffnen willst wie z.B. Muscheln.";
 	LFINT_TXT_SELECTCHARCOPY = "W\195\164hle den Charakter, von dem du die Einstellungen kopieren m\195\182chtest.";
 	LFINT_TXT_COPYSUCCESS = "Einstellungen wurden erfolgreich kopiert.";
+	LFINT_TXT_DELETESUCCESS = "Settings were deleted succesfully." ;
 	LFINT_TXT_SELECTTYPE = "W\195\164hle eine Untergruppe:";
 	LFINT_TXT_SIZETOCALCULATE = "Anzahl Gegenst\195\164nde f\195\188r die Wertberechnung:";
 	LFINT_TXT_SIZETOCALCULATE_TEXT1 = "ein einzelner Gegenstand";

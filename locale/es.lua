@@ -180,7 +180,6 @@ LootFilter.Locale = {
 		["TYVaritas"]= "Varitas"
 	},
 	LocText = {
-		["LTTryopen"] = "intentando abrir",
 		["LTNameMatched"] = "nombre coincide",
 		["LTQualMatched"] = "calidad coincide",
 		["LTQuest"] = "misi\195\179n",      -- Used to match Quest Item as Quality Value
@@ -195,8 +194,7 @@ LootFilter.Locale = {
 		["LTWasDeleted"] = "se borr\195\179",
 		["LTNewVersion1"] = "Nueva versi\195\179n",
 		["LTNewVersion2"] = "de Loot Filter detectada. B\195\161jala de http://www.lootfilter.com .",
-		["LTAddedCosQuest"] = "A\195\177adido por misi\195\179n",
-		["LTDeleteItems"] = "BORRAR objetos",
+["LTDeleteItems"] = "BORRAR objetos",
 		["LTSellItems"] = "VENDER objetos",
 		["LTFinishedSC"] = "Fin de Venta/Limpieza.",
 		["LTNoOtherCharacterToCopySettings"] = "Ahora mismo no tienes ning\195\186n otro personaje del que copiar la configuraci\195\179n.",
@@ -208,6 +206,7 @@ LootFilter.Locale = {
 		["LTSessionValueHour"] = "Media / hora",
 		["LTNoMatchingItems"] = "No se encontraron objetos coincidentes.",
 		["LTItemLowestValue"] = "objeto tiene el valor mas bajo",
+		["LTBagSpaceLow"] = "bag space low",
 		["LTVendorWinClosedWhileSelling"] = "ventana de vendedor cerrada mientras se vend\195\173a.",
 		["LTTimeOutItemNotFound"] = "Se acab\195\179 el tiempo. Uno o mas de los objetos de la lista no se encontr\195\179.",
     },
@@ -223,7 +222,8 @@ LootFilter.Locale = {
 		["LToolTip9"] = "Escribe cuantos huecos vacios quieres mantener. Loot Filter remplazara objetos de menos valor por objetos de mayor valor si hay menos huecos libres de los indicados.",
 		["LToolTip10"] = "Estos objetos no coinciden con ninguna caracter\195\173stica para mantenerlos. Puedes decidir vender o borrar estos objetos autom\195\161ticamente. Con Mayus-clic a\195\177ades un objeto a la lista MANTENER.",
         ["LToolTip11"] = "Los objetos que coinciden con esta lista se abren autom\195\161ticamente. Usar esto con pergaminos no funcionar\195\161 y generar\195\161 un error.\n\nUn nombre por l\195\173nea. No distingue may\195\186sculas/min\195\186sculas.\n\nExacto:           Almeja de caparaz\195\179n grueso\nComod\195\173n (*):  *Almeja*  (contiene 'Almeja')\n                        *Almeja    (termina con 'Almeja')\nParcial (#):    #Almeja   (contiene 'Almeja')\nComentario:   *Almeja* ; abrir almejas",
-		["LToolTip12"] = "Selecciona como quieres calcular el valor de los objetos (valor * n\195\186mero_de_objetos). N\195\186mero_de_objetos puede ser un solo objeto, la cantidad actual o la cantidad m\195\161xima apilable."
+		["LToolTip12"] = "Selecciona como quieres calcular el valor de los objetos (valor * n\195\186mero_de_objetos). N\195\186mero_de_objetos puede ser un solo objeto, la cantidad actual o la cantidad m\195\161xima apilable.",
+		["LToolTip13"] = "Check a box to set the state:\n\n|cff888888Unchecked|r: Neutral, no action for this property\n|cff33ff33Keep|r: matching items are kept\n|cffff3333Del|r: matching items are deleted"
 		},
 	};
 	
@@ -241,6 +241,7 @@ LFINT_BTN_DELETEITEMS = "BORRAR objetos" ;
 LFINT_BTN_YESSURE = "Si, estoy seguro" ;
 LFINT_BTN_COPYSETTINGS = "Copiar configuraci\195\179n";
 LFINT_BTN_DELETESETTINGS = "Delete settings";
+LFINT_BTN_RESET = "Reset";
 
 
 	LFINT_TXT_SELECTBAGS = "Selecciona las bolsas en las que quieres usar Loot Filter.";
@@ -253,6 +254,7 @@ LFINT_BTN_DELETESETTINGS = "Delete settings";
 	LFINT_TXT_AUTOOPEN = "Objetos que quieres abrir y saquear autom\195\161ticamente (ej: conchas)." ;
 	LFINT_TXT_SELECTCHARCOPY = "Selecciona el personaje del que quieres copiar la configuraci\195\179n." ;
 	LFINT_TXT_COPYSUCCESS = "Configuracion copiada con \195\169xito." ;
+	LFINT_TXT_DELETESUCCESS = "Settings were deleted succesfully." ;
 	LFINT_TXT_SELECTTYPE = "Selecciona un subtipo: ";
 
 LFINT_TXT_SIZETOCALCULATE = "Para calcular precio usar: ";

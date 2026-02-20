@@ -143,100 +143,6 @@ function LootFilter.normalizeConfiguredNameFilters()
 	return keepChanged or deleteChanged;
 end;
 
-function LootFilter.isAutoQuestComment(comment)
-	if (comment == nil) or (comment == "") then
-		return false;
-	end;
-
-	local questComment = LootFilter.Locale.LocText["LTAddedCosQuest"] or "";
-	if (questComment == "") then
-		return false;
-	end;
-
-	local cleanComment = string.gsub(comment, "^;%s*", "");
-	cleanComment = strtrim(cleanComment);
-
-	return string.lower(cleanComment) == string.lower(questComment);
-end;
-
-function LootFilter.removeAutoQuestKeepsForDeleteOverride(item)
-	if (LootFilter.matchDeleteNames(item) == "") then
-		return false;
-	end;
-
-	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
-	if (keepList == nil) or (keepList["names"] == nil) then
-		return false;
-	end;
-
-	local removed = false;
-	for i = table.getn(keepList["names"]), 1, -1 do
-		local nameRule = keepList["names"][i];
-		local searchName, comment = LootFilter.stripComment(nameRule);
-		if LootFilter.isAutoQuestComment(comment) and LootFilter.matchItemNames(item, searchName) then
-			table.remove(keepList["names"], i);
-			removed = true;
-		end;
-	end;
-
-	return removed;
-end;
-
-function LootFilter.AddQuestItemToKeepList(item)
-	if (item == nil) or (item["name"] == nil) then
-		return false;
-	end;
-
-	local questText = string.lower(LootFilter.Locale.LocText["LTQuest"] or "quest");
-	local itemType = item["itemType"] or item["type"];
-	local itemSubType = item["itemSubType"] or item["subType"];
-	if (itemType == nil) and (itemSubType == nil) and (item["id"] ~= nil) then
-		local _, _, _, _, _, fetchedType, fetchedSubType = GetItemInfo(item["id"]);
-		itemType = fetchedType;
-		itemSubType = fetchedSubType;
-	end;
-
-	local isQuestItem = false;
-	if (itemType ~= nil) and (string.lower(itemType) == questText) then
-		isQuestItem = true;
-	end;
-	if (itemSubType ~= nil) and (string.lower(itemSubType) == questText) then
-		isQuestItem = true;
-	end;
-	if (not isQuestItem) then
-		return false;
-	end;
-
-	if (LootFilter.matchDeleteNames(item) ~= "") then
-		return false;
-	end;
-
-	local keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
-	if (keepList == nil) then
-		LootFilterVars[LootFilter.REALMPLAYER].keepList = {};
-		keepList = LootFilterVars[LootFilter.REALMPLAYER].keepList;
-	end;
-	if (keepList["names"] == nil) then
-		keepList["names"] = {};
-	end;
-
-	local cleanItemName = LootFilter.SanitizeName(item["name"]);
-	for _, value in ipairs(keepList["names"]) do
-		local existingName = LootFilter.stripComment(value);
-		local cleanExistingName = LootFilter.SanitizeName(existingName);
-		if (cleanExistingName == cleanItemName) then
-			return false;
-		end;
-	end;
-
-	table.insert(keepList["names"], item["name"] .. "  ; " .. LootFilter.Locale.LocText["LTAddedCosQuest"]);
-	if (LootFilterVars[LootFilter.REALMPLAYER].notifykeep) and (not LootFilterVars[LootFilter.REALMPLAYER].silent) then
-		LootFilter.print(item["link"] ..
-			" " .. LootFilter.Locale.LocText["LTKept"] .. ": " .. LootFilter.Locale.LocText["LTQuestItem"]);
-	end;
-
-	return true;
-end;
 
 function LootFilter.sendAddonMessage(value, channel)
 	if (channel == 1) then
@@ -329,8 +235,6 @@ function LootFilter.constructCleanList()
 					item["slot"] = i;
 					item["amount"] = LootFilter.getStackSizeOfItem(item);
 					LootFilter.ensureItemValue(item); -- re-resolve value in case GetItemInfo was not ready earlier
-					LootFilter.AddQuestItemToKeepList(item);
-					LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 
 					local action = LootFilter.evaluateItem(item);
 

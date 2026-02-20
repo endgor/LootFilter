@@ -98,8 +98,6 @@ function LootFilter.processBagUpdate()
 		LootFilter.debug("|cff44ff44[LOOTBOT]|r New item: " ..
 			tostring(item["name"]) ..
 			" (id=" .. tostring(item["id"]) .. ") bag=" .. tostring(item["bag"]) .. " slot=" .. tostring(item["slot"]));
-		LootFilter.AddQuestItemToKeepList(item);
-		LootFilter.removeAutoQuestKeepsForDeleteOverride(item);
 		table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
 
 		if GetSellValue then
@@ -198,7 +196,6 @@ function LootFilter.OnEvent()
 					local cleanItemName = LootFilter.SanitizeName(itemName);
 					if (cleanName == cleanItemName) then
 						table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, index);
-						LootFilter.AddQuestItemToKeepList(item);
 						return;
 					end;
 				end;
