@@ -2,7 +2,7 @@
 ## Title: Loot Filter
 ## Notes: Filter items you get from looting
 ## SavedVariables: LootFilterVars
-## X-Version: 2.0.1
+## X-Version: 2.0.2
 
 xml\templates.xml
 

@@ -92,10 +92,12 @@ end
 -- Evaluate an item against all filter rules.
 --
 -- Priority chain:
---   1. Names        (highest - explicit name always wins)
---   2. Quality/Type (delete wins over keep when both match)
---   3. Value        (additional delete - only if no quality/type rule matched)
---   4. No match     (kept by default)
+--   1. Keep Names  (highest - explicit name always wins)
+--   2. Delete Names
+--   3. Item Type   (specific type rule wins outright — overrides quality in both directions)
+--   4. Quality     (broad quality rule, only evaluated if no type rule fired)
+--   5. Value       (catch-all delete, only if no type/quality rule fired)
+--   6. No match    (kept by default)
 --
 -- Returns: action ("keep", "delete", or nil), reason string
 function LootFilter.evaluateItem(item)
@@ -111,31 +113,25 @@ function LootFilter.evaluateItem(item)
 		return "delete", reason;
 	end
 
-	-- Step 2: Quality and Type (delete wins over keep when both match)
-	local qualAction, qualReason = LootFilter.matchQuality(item);
+	-- Step 2: Item Type (more specific than quality — fires first and wins outright)
 	local typeAction, typeReason = LootFilter.matchType(item);
-
-	local action = nil;
-	local lastReason = nil;
-
-	if qualAction == "delete" or typeAction == "delete" then
-		action = "delete";
-		lastReason = (qualAction == "delete") and qualReason or typeReason;
-	elseif qualAction == "keep" or typeAction == "keep" then
-		action = "keep";
-		lastReason = (qualAction == "keep") and qualReason or typeReason;
+	if typeAction ~= nil then
+		return typeAction, typeReason;
 	end
 
-	-- Step 3: Value (additional delete — only when no quality/type rule matched)
-	if action == nil then
-		local valAction, valReason = LootFilter.matchValue(item);
-		if valAction then
-			action = valAction;
-			lastReason = valReason;
-		end
+	-- Step 3: Quality (only evaluated if no type rule matched)
+	local qualAction, qualReason = LootFilter.matchQuality(item);
+	if qualAction ~= nil then
+		return qualAction, qualReason;
 	end
 
-	return action, lastReason;
+	-- Step 4: Value (catch-all delete — only if no type/quality rule matched)
+	local valAction, valReason = LootFilter.matchValue(item);
+	if valAction then
+		return valAction, valReason;
+	end
+
+	return nil, nil;
 end
 
 function LootFilter.matchKeepNames(item)

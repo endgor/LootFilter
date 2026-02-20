@@ -1,5 +1,10 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.2:
+- Item Type is now higher priority than Quality.
+- Keep Cloth + Delete Common = Cloth is kept, all other Common items deleted.
+- Delete Shield + Keep Epic = Shields are deleted, all other Epics kept.
+
 v2.0.1:
 Added Miscellaneous > Mount item type to the Filters tab (all locales).
 
