@@ -1,5 +1,11 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.3:
+Removed automatic addition of quest items to the NAMES Keep list.
+Quest items are still handled by the Quality filter (Keep/Delete/Neutral).
+Fixed missing locale keys in all non-English locales (LTBagSpaceLow, LToolTip13, LFINT_TXT_DELETESUCCESS, LFINT_BTN_RESET).
+Removed orphaned LTTryopen locale key from all non-English locales.
+
 v2.0.2:
 - Item Type is now higher priority than Quality.
 - Keep Cloth + Delete Common = Cloth is kept, all other Common items deleted.
