@@ -177,6 +177,7 @@ LootFilter.Locale = {
 		["OPBag2"]= "Bag 2",
 		["OPBag3"]= "Bag 3",
 		["OPBag4"]= "Bag 4",
+		["OPQualityFirst"]= "Quality takes priority over Item Type",
 		["TYWands"]= "Wands"
 	},
     LocText = {

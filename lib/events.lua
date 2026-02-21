@@ -377,6 +377,9 @@ function LootFilter.OnEvent()
 			if (LootFilterVars[LootFilter.REALMPLAYER].lootbotmode == nil) then
 				LootFilterVars[LootFilter.REALMPLAYER].lootbotmode = false;
 			end;
+			if (LootFilterVars[LootFilter.REALMPLAYER].qualityfirst == nil) then
+				LootFilterVars[LootFilter.REALMPLAYER].qualityfirst = false;
+			end;
 
 			LootFilter.takeBagSnapshot();
 

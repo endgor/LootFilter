@@ -1037,6 +1037,10 @@ local function createSettingsPage(parent)
 	createCheckOption(page, "LootFilterOPBag3", 280, -230)
 	createCheckOption(page, "LootFilterOPBag4", 360, -230)
 
+	-- Advanced
+	createSectionHeader(page, "Advanced", 10, -258)
+	createCheckOption(page, "LootFilterOPQualityFirst", 14, -284)
+
 	return page
 end
 
@@ -1146,7 +1150,7 @@ local function createHelpPage(parent)
 		"Rules are checked in order. First match wins.\n\n" ..
 		"|cffffd100 1.|r  |cffffffffKeep Names|r  |cff888888(Names tab)|r  —  always kept, overrides everything\n" ..
 		"|cffffd100 2.|r  |cffffffffDelete Names|r  |cff888888(Names tab)|r  —  always deleted, overrides everything\n" ..
-		"|cffffd100 3.|r  |cffffffffQuality / Type|r  |cff888888(Filters tab)|r  —  delete wins if both match\n" ..
+		"|cffffd100 3.|r  |cffffffffItem Type / Quality|r  |cff888888(Filters tab)|r  —  Item Type first by default; swap order in Settings > Advanced\n" ..
 		"|cffffd100 4.|r  |cffffffffValue|r  |cff888888(Values tab)|r  —  catch-all delete if nothing above matched\n" ..
 		"|cffffd100 5.|r  |cffffffffNo match|r  —  kept by default"
 	)
@@ -1469,6 +1473,8 @@ function LootFilter.setRadioButtonValue(button)
 		LootFilterVars[LootFilter.REALMPLAYER].openbag[4] = checked
 	elseif name == "OPConfirmDelete" then
 		LootFilterVars[LootFilter.REALMPLAYER].confirmdel = checked
+	elseif name == "OPQualityFirst" then
+		LootFilterVars[LootFilter.REALMPLAYER].qualityfirst = checked
 	end
 end
 
@@ -1516,6 +1522,8 @@ function LootFilter.getRadioButtonValue(button)
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].openbag[4])
 	elseif name == "OPConfirmDelete" then
 		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].confirmdel)
+	elseif name == "OPQualityFirst" then
+		radioButton:SetChecked(LootFilterVars[LootFilter.REALMPLAYER].qualityfirst)
 	end
 end
 

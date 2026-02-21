@@ -94,10 +94,9 @@ end
 -- Priority chain:
 --   1. Keep Names  (highest - explicit name always wins)
 --   2. Delete Names
---   3. Item Type   (specific type rule wins outright — overrides quality in both directions)
---   4. Quality     (broad quality rule, only evaluated if no type rule fired)
---   5. Value       (catch-all delete, only if no type/quality rule fired)
---   6. No match    (kept by default)
+--   3. Item Type / Quality  (order swappable via qualityfirst setting; default: Type before Quality)
+--   4. Value       (catch-all delete, only if no type/quality rule fired)
+--   5. No match    (kept by default)
 --
 -- Returns: action ("keep", "delete", or nil), reason string
 function LootFilter.evaluateItem(item)
@@ -113,16 +112,27 @@ function LootFilter.evaluateItem(item)
 		return "delete", reason;
 	end
 
-	-- Step 2: Item Type (more specific than quality — fires first and wins outright)
-	local typeAction, typeReason = LootFilter.matchType(item);
-	if typeAction ~= nil then
-		return typeAction, typeReason;
-	end
-
-	-- Step 3: Quality (only evaluated if no type rule matched)
-	local qualAction, qualReason = LootFilter.matchQuality(item);
-	if qualAction ~= nil then
-		return qualAction, qualReason;
+	-- Step 2 & 3: Item Type vs Quality — order controlled by the qualityfirst setting
+	if LootFilterVars[LootFilter.REALMPLAYER].qualityfirst then
+		-- Quality first: broad quality rules are checked before specific type rules
+		local qualAction, qualReason = LootFilter.matchQuality(item);
+		if qualAction ~= nil then
+			return qualAction, qualReason;
+		end
+		local typeAction, typeReason = LootFilter.matchType(item);
+		if typeAction ~= nil then
+			return typeAction, typeReason;
+		end
+	else
+		-- Default: Item Type first (more specific rule wins outright)
+		local typeAction, typeReason = LootFilter.matchType(item);
+		if typeAction ~= nil then
+			return typeAction, typeReason;
+		end
+		local qualAction, qualReason = LootFilter.matchQuality(item);
+		if qualAction ~= nil then
+			return qualAction, qualReason;
+		end
 	end
 
 	-- Step 4: Value (catch-all delete — only if no type/quality rule matched)
