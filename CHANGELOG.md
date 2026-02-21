@@ -1,5 +1,11 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.4:
+Added optional quality qualifier syntax to name filters: *Pattern* [qualityname]
+Rules now only fire when item quality meets the specified minimum threshold.
+Example: *Cloak* [uncommon] keeps cloaks that are uncommon or better; poor/common cloaks fall through to quality rules and are deleted.
+Added advanced setting to swap filter priority: "Quality takes priority over Item Type" (Settings tab > Advanced).
+
 v2.0.3:
 Removed automatic addition of quest items to the NAMES Keep list.
 Quest items are still handled by the Quality filter (Keep/Delete/Neutral).
