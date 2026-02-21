@@ -243,6 +243,15 @@ function LootFilter.findItemInBags(item)
 	return item;
 end;
 
+local QUALITY_BY_NAME = {
+	["poor"] = 0, ["grey"] = 0, ["gray"] = 0,
+	["common"] = 1, ["white"] = 1,
+	["uncommon"] = 2, ["green"] = 2,
+	["rare"] = 3, ["blue"] = 3,
+	["epic"] = 4, ["purple"] = 4,
+	["legendary"] = 5, ["orange"] = 5,
+};
+
 function LootFilter.wildcardToPattern(wildcard)
 	local escaped = string.gsub(wildcard, "([%(%)%.%%%+%-%?%[%]%^%$])", "%%%1");
 	escaped = string.gsub(escaped, "%*", "(.*)");
@@ -256,6 +265,18 @@ function LootFilter.matchItemNames(item, searchName)
 
 	local comment;
 	searchName, comment = LootFilter.stripComment(searchName);
+
+	-- Parse optional quality qualifier [qualityname] at end of pattern.
+	-- When present the rule only fires if item quality >= the named threshold.
+	-- Example: *Cloak* [uncommon]  →  only matches uncommon or better cloaks.
+	local qualName = string.match(searchName, "%[(%a+)%]%s*$");
+	if qualName then
+		local qualMin = QUALITY_BY_NAME[string.lower(qualName)];
+		if qualMin ~= nil and (item["rarity"] == nil or item["rarity"] < qualMin) then
+			return false;
+		end
+		searchName = LootFilter.trim(string.gsub(searchName, "%s*%[" .. qualName .. "%]%s*$", ""));
+	end
 
 	if (string.find(searchName, "*", 1, true) ~= nil) and (string.find(searchName, "#", 1, true) ~= 1) then
 		local pattern = string.lower(LootFilter.wildcardToPattern(searchName));

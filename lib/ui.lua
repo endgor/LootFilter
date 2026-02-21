@@ -1175,7 +1175,12 @@ local function createHelpPage(parent)
 		"   |cff88bbcc##Use: Restores|r  usable recovery items\n\n" ..
 		"|cffffd100Comments|r  —  add notes after a semicolon\n" ..
 		"   |cff88bbcc*Beast* ; skinning mats|r\n" ..
-		"   |cff88bbccSilk Cloth ; save for tailoring|r"
+		"   |cff88bbccSilk Cloth ; save for tailoring|r\n\n" ..
+		"|cffffd100Quality filter [name]|r  —  rule fires only if quality >= name\n" ..
+		"   |cff88bbcc*Cloak* [uncommon]|r  match cloaks that are uncommon or better\n" ..
+		"   |cff88bbcc*Cloak* [rare]|r      match cloaks that are rare or better\n" ..
+		"Qualities: poor, grey, common, white, uncommon, green,\n" ..
+		"           rare, blue, epic, purple, legendary, orange"
 	)
 
 	-- Section: Name Filter Examples
@@ -1192,7 +1197,11 @@ local function createHelpPage(parent)
 		"   |cff888888or|r Keep names: |cff88bbcc##Herb|r  (matches tooltip)\n\n" ..
 		"|cffffd100Delete food and drink under a certain value:|r\n" ..
 		"   Delete names: |cff88bbcc*Water|r  and  |cff88bbcc*Bread|r\n" ..
-		"   |cff888888or|r Filters tab: set Consumable > Food & Drink to Delete"
+		"   |cff888888or|r Filters tab: set Consumable > Food & Drink to Delete\n\n" ..
+		"|cffffd100Keep cloaks, but only uncommon or better:|r\n" ..
+		"   Filters tab: set Poor and Common quality to Delete\n" ..
+		"   Keep names: |cff88bbcc*Cloak* [uncommon]|r\n" ..
+		"   Poor/Common cloaks won't match the name rule and will be deleted by quality"
 	)
 
 	-- Section: Other Tips
