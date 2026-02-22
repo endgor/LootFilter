@@ -1,5 +1,8 @@
 NOTE: Version restarted from 1.0 due to extensive custom changes for Project Ebonhold.
 
+v2.0.5:
+Fixed items looted by the Scavenger pet slipping through delete rules due to item data not being cached yet.
+
 v2.0.4:
 Added optional quality qualifier syntax to name filters: *Pattern* [qualityname]
 Rules now only fire when item quality meets the specified minimum threshold.
