@@ -13,12 +13,9 @@ LootFilter = {
 	SELL_TIMEOUT = 30,
 	SELL_ITEM_TIMEOUT = 10,
 	SELL_QUEUE = 5,
-	NUMLINES = 10,
 	REALMPLAYER = "",
 
 	filterScheduled = false,
-	hooked = false,
-	lastUpdate = 0,
 	hasFocus = 0,
 	cleanList = {},
 	marketValue = false,
@@ -28,5 +25,5 @@ LootFilter = {
 	bagUpdatePending = false,
 	lootWindowOpen = false,
 	autoSellActive = false,
-	BAG_UPDATE_DELAY = 1.0, -- Delay before processing bag updates (allows multiple items to arrive)
+	BAG_UPDATE_DELAY = 2.0, -- Delay before processing bag updates (allows multiple items to arrive)
 };

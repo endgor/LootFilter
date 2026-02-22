@@ -27,9 +27,10 @@ function LootFilter.showItemTooltip(frame)
 	local value = fontString:GetText();
 	if (LootFilter.cleanList ~= nil) and (table.getn(LootFilter.cleanList) > 0) and (value ~= nil) and (value ~= "") then
 		local item = LootFilter.getBasicItemInfo(value);
+		if (item == nil) then return end;
 
 		item = LootFilter.findItemInBags(item);
-		
+
 		if (item["bag"] >= 0) and (item["slot"] >= 0) then
 			GameTooltip:SetOwner(frame, "ANCHOR_LEFT");
 			GameTooltip:SetBagItem(item["bag"], item["slot"]);

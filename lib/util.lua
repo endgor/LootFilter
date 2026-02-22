@@ -224,7 +224,6 @@ function LootFilter.constructCleanList()
 	LootFilter.cleanList = {};
 	local z = 1;
 	local slots = 0;
-	local totalValue = 0;
 	for j = 0, 4, 1 do
 		if (LootFilterVars[LootFilter.REALMPLAYER].openbag[j]) then
 			local x = GetContainerNumSlots(j);

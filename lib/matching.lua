@@ -275,7 +275,7 @@ function LootFilter.matchItemNames(item, searchName)
 		if qualMin ~= nil and (item["rarity"] == nil or item["rarity"] < qualMin) then
 			return false;
 		end
-		searchName = LootFilter.trim(string.gsub(searchName, "%s*%[" .. qualName .. "%]%s*$", ""));
+		searchName = strtrim(string.gsub(searchName, "%s*%[" .. qualName .. "%]%s*$", ""));
 	end
 
 	if (string.find(searchName, "*", 1, true) ~= nil) and (string.find(searchName, "#", 1, true) ~= 1) then

@@ -30,6 +30,19 @@ function LootFilter.processItemStack()
 		item["amount"] = LootFilter.getStackSizeOfItem(item);
 		LootFilter.ensureItemValue(item);
 		LootFilter.refreshItemInfoFromBag(item);
+
+		-- Re-check item type info; GetItemInfo may have returned nil on first loot
+		-- if the item wasn't in the client cache yet (common with mass/pet looting).
+		-- Cycle to back of stack and retry rather than evaluate with incomplete data.
+		_, _, item["rarity"], _, _, item["type"], item["subType"], _ = GetItemInfo(item["id"]);
+		if (item["type"] == nil) and (GetTime() < LootFilter.LOOT_MAXTIME) then
+			LootFilter.debug("|cffffffcc[PROCESS]|r Item info not cached yet, requeueing: " .. tostring(item["name"]));
+			table.remove(LootFilterVars[LootFilter.REALMPLAYER].itemStack, 1);
+			table.insert(LootFilterVars[LootFilter.REALMPLAYER].itemStack, item);
+			LootFilter.schedule(LootFilter.SCHEDULE_INTERVAL, LootFilter.processItemStack);
+			return;
+		end
+
 		local action, reason = LootFilter.evaluateItem(item);
 		LootFilter.debug("|cffffffcc[PROCESS]|r evaluateItem => " ..
 			tostring(action) .. ": " .. tostring(reason));
